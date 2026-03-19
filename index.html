@@ -442,8 +442,8 @@ function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-function makeNombresQuestion(max) {
-  const correct = randInt(1, max);
+function makeNombresQuestion(max, correct) {
+  if (correct === undefined) correct = randInt(1, max);
   const nums = new Set([correct]);
   // Distracteurs : mélange de nombres proches et aléatoires du même palier
   let attempts = 0;
@@ -487,9 +487,9 @@ function makeTableDistractors(correct) {
   return shuffle([...pool].filter(v => v !== correct)).slice(0, 3);
 }
 
-function makeTableQuestion(tableNum, mode) {
+function makeTableQuestion(tableNum, mode, b) {
   const a = tableNum === 0 ? randInt(2, 10) : tableNum;
-  const b = randInt(1, 10);
+  if (b === undefined) b = randInt(1, 10);
   const correct = a * b;
 
   if (mode === 'A') {
@@ -533,13 +533,17 @@ function makeTableQuestion(tableNum, mode) {
 const NB_QUESTIONS = 10;
 
 function startNombresQuiz(max) {
-  const questions = Array.from({ length: NB_QUESTIONS }, () => makeNombresQuestion(max));
+  const allNums = Array.from({ length: max }, (_, i) => i + 1);
+  const pool = shuffle(allNums).slice(0, NB_QUESTIONS);
+  const questions = pool.map(n => makeNombresQuestion(max, n));
   lastQuizConfig = { type: 'nombres', level: max.toString() };
   beginQuiz(questions, 'nombres', max.toString());
 }
 
 function startTablesQuiz(tableNum, mode) {
-  const questions = Array.from({ length: NB_QUESTIONS }, () => makeTableQuestion(tableNum, mode));
+  // Tirage sans remise sur les multiplicateurs 1-10
+  const multipliers = shuffle(Array.from({ length: 10 }, (_, i) => i + 1)).slice(0, NB_QUESTIONS);
+  const questions = multipliers.map(b => makeTableQuestion(tableNum, mode, b));
   lastQuizConfig = { type: 'tables', level: `${tableNum}_${mode}`, tableNum, mode };
   beginQuiz(questions, 'tables', `${tableNum}_${mode}`);
 }
