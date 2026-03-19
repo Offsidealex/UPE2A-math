@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prof UPE2A – Maths</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .fade-in { animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- ── Connexion ──────────────────────────────────────────────────────────── -->
+<div id="screen-login" class="min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-sm space-y-5">
+    <div class="text-center">
+      <div class="text-4xl mb-2">🔐</div>
+      <h1 class="text-xl font-bold text-gray-800">Espace Professeur</h1>
+      <p class="text-sm text-gray-400">Maths UPE2A</p>
+    </div>
+    <input id="input-pw" type="password" placeholder="Mot de passe"
+      class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition">
+    <p id="login-err" class="text-red-500 text-sm hidden text-center"></p>
+    <button onclick="doLogin()"
+      class="w-full py-3 bg-gray-800 text-white rounded-xl font-bold hover:bg-gray-900 transition">
+      Connexion
+    </button>
+  </div>
+</div>
+
+<!-- ── Dashboard ──────────────────────────────────────────────────────────── -->
+<div id="screen-dash" class="hidden fade-in">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+    <div>
+      <h1 class="text-lg font-bold text-gray-800">Maths UPE2A — Espace Professeur</h1>
+      <p class="text-xs text-gray-400">Lycée Denis Diderot</p>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="showSection('sessions')" id="nav-sessions"
+        class="nav-btn text-sm px-4 py-2 rounded-lg font-semibold transition">
+        Sessions
+      </button>
+      <button onclick="showSection('classes')" id="nav-classes"
+        class="nav-btn text-sm px-4 py-2 rounded-lg font-semibold transition">
+        Classes
+      </button>
+      <button onclick="doLogout()" class="text-sm text-gray-400 hover:text-gray-600 ml-2">Déco</button>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto p-6">
+
+    <!-- ── Statistiques rapides ── -->
+    <div id="stats-row" class="grid grid-cols-3 gap-4 mb-8"></div>
+
+    <!-- ── Section : Sessions ── -->
+    <div id="section-sessions" class="hidden">
+      <div class="flex flex-wrap gap-3 mb-5 items-end">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">Classe</label>
+          <select id="filter-class" onchange="loadSessions()"
+            class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400">
+            <option value="">Toutes</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">Type d'exercice</label>
+          <select id="filter-type" onchange="loadSessions()"
+            class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400">
+            <option value="">Tous</option>
+            <option value="nombres">Nombres</option>
+            <option value="tables">Tables</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">Élève</label>
+          <input id="filter-student" type="text" placeholder="Chercher…" oninput="loadSessions()"
+            class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400">
+        </div>
+        <button onclick="loadSessions()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
+          Actualiser
+        </button>
+      </div>
+
+      <!-- Résumé par élève -->
+      <div id="student-summary" class="mb-6 hidden">
+        <h3 class="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wide">Résumé par élève</h3>
+        <div id="student-summary-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+
+      <!-- Tableau des sessions -->
+      <div class="bg-white rounded-2xl shadow overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Élève</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Classe</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Exercice</th>
+              <th class="text-center px-4 py-3 font-semibold text-gray-600">Score</th>
+              <th class="text-center px-4 py-3 font-semibold text-gray-600">%</th>
+              <th class="text-right px-4 py-3 font-semibold text-gray-600">Date</th>
+            </tr>
+          </thead>
+          <tbody id="sessions-tbody">
+            <tr><td colspan="6" class="text-center py-8 text-gray-400">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Section : Classes ── -->
+    <div id="section-classes" class="hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Créer un code -->
+        <div class="bg-white rounded-2xl shadow p-6">
+          <h3 class="font-bold text-gray-800 mb-4">Créer un code de classe</h3>
+          <div class="space-y-3">
+            <input id="new-class-name" type="text" placeholder="Nom de la classe (ex : UPE2A 2025)"
+              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition text-sm">
+            <button onclick="createCode()"
+              class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition text-sm">
+              Générer un code
+            </button>
+            <div id="new-code-result" class="hidden text-center p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+              <p class="text-xs text-blue-500 font-semibold mb-1">Code généré :</p>
+              <p id="new-code-value" class="text-3xl font-black text-blue-700 tracking-widest"></p>
+              <p id="new-code-class" class="text-xs text-blue-400 mt-1"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Liste des codes -->
+        <div class="bg-white rounded-2xl shadow p-6">
+          <h3 class="font-bold text-gray-800 mb-4">Codes actifs</h3>
+          <div id="codes-list" class="space-y-2 text-sm text-gray-400">Chargement…</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const API = '';
+let teacherPw = '';
+
+// ── Connexion ──────────────────────────────────────────────────────────────
+
+async function doLogin() {
+  const pw = document.getElementById('input-pw').value.trim();
+  const err = document.getElementById('login-err');
+  if (!pw) return;
+  try {
+    const r = await fetch(`${API}/stats`, { headers: { 'x-teacher-password': pw } });
+    if (!r.ok) { showErr(err, 'Mot de passe incorrect.'); return; }
+    teacherPw = pw;
+    err.classList.add('hidden');
+    const data = await r.json();
+    renderStats(data);
+    document.getElementById('screen-login').classList.add('hidden');
+    document.getElementById('screen-dash').classList.remove('hidden');
+    loadClassFilter(data.classes);
+    showSection('sessions');
+    loadSessions();
+    loadCodes();
+  } catch {
+    showErr(err, 'Erreur de connexion.');
+  }
+}
+
+function showErr(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+
+function doLogout() {
+  teacherPw = '';
+  document.getElementById('input-pw').value = '';
+  document.getElementById('screen-dash').classList.add('hidden');
+  document.getElementById('screen-login').classList.remove('hidden');
+}
+
+document.getElementById('input-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+
+function showSection(name) {
+  ['sessions','classes'].forEach(s => {
+    document.getElementById(`section-${s}`).classList.toggle('hidden', s !== name);
+    const btn = document.getElementById(`nav-${s}`);
+    if (s === name) {
+      btn.className = 'nav-btn text-sm px-4 py-2 rounded-lg font-semibold transition bg-blue-600 text-white';
+    } else {
+      btn.className = 'nav-btn text-sm px-4 py-2 rounded-lg font-semibold transition bg-gray-100 text-gray-600 hover:bg-gray-200';
+    }
+  });
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+
+function renderStats(data) {
+  document.getElementById('stats-row').innerHTML = [
+    { label: 'Sessions totales', value: data.total_sessions, icon: '📊' },
+    { label: 'Élèves distincts',  value: data.total_students, icon: '👩‍🎓' },
+    { label: 'Classes actives',   value: data.classes.length,  icon: '🏫' },
+  ].map(s => `
+    <div class="bg-white rounded-2xl shadow p-5 text-center">
+      <div class="text-3xl mb-1">${s.icon}</div>
+      <p class="text-3xl font-black text-gray-800">${s.value}</p>
+      <p class="text-xs text-gray-400 mt-1">${s.label}</p>
+    </div>`).join('');
+}
+
+// ── Sessions ───────────────────────────────────────────────────────────────
+
+function labelSession(type, level) {
+  if (type === 'nombres') return `Nombres 1–${level}`;
+  const [table, mode] = level.split('_');
+  const t = table === '0' ? 'Toutes les tables' : `Table de ${table}`;
+  const m = mode === 'A' ? 'QCM' : mode === 'B' ? 'saisie chiffres' : 'saisie lettres';
+  return `${t} (${m})`;
+}
+
+function scoreBadge(score, total) {
+  const pct = score / total;
+  const color = pct >= 0.8 ? 'bg-green-100 text-green-700' : pct >= 0.5 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700';
+  return `<span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold ${color}">${score}/${total}</span>`;
+}
+
+function loadClassFilter(classes) {
+  const sel = document.getElementById('filter-class');
+  sel.innerHTML = '<option value="">Toutes</option>' +
+    classes.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+async function loadSessions() {
+  const classId  = document.getElementById('filter-class').value;
+  const type     = document.getElementById('filter-type').value;
+  const student  = document.getElementById('filter-student').value.trim();
+
+  let url = `${API}/sessions?`;
+  if (classId) url += `class_id=${encodeURIComponent(classId)}&`;
+  if (type)    url += `exercise_type=${encodeURIComponent(type)}&`;
+  if (student) url += `student_name=${encodeURIComponent(student)}&`;
+
+  const tbody = document.getElementById('sessions-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Chargement…</td></tr>';
+
+  try {
+    const r = await fetch(url, { headers: { 'x-teacher-password': teacherPw } });
+    if (!r.ok) return;
+    const sessions = await r.json();
+
+    if (!sessions.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-300">Aucune session trouvée.</td></tr>';
+      document.getElementById('student-summary').classList.add('hidden');
+      return;
+    }
+
+    tbody.innerHTML = sessions.map(s => `
+      <tr class="border-b hover:bg-gray-50 transition">
+        <td class="px-4 py-3 font-medium text-gray-800">${s.student_name}</td>
+        <td class="px-4 py-3 text-gray-500">${s.class_id}</td>
+        <td class="px-4 py-3 text-gray-600">${labelSession(s.exercise_type, s.level)}</td>
+        <td class="px-4 py-3 text-center">${scoreBadge(s.score, s.total)}</td>
+        <td class="px-4 py-3 text-center text-sm font-semibold ${s.score/s.total >= 0.8 ? 'text-green-600' : s.score/s.total >= 0.5 ? 'text-orange-500' : 'text-red-500'}">
+          ${Math.round(s.score / s.total * 100)} %
+        </td>
+        <td class="px-4 py-3 text-right text-xs text-gray-400">${new Date(s.completed_at).toLocaleString('fr-FR')}</td>
+      </tr>`).join('');
+
+    // Résumé par élève
+    renderStudentSummary(sessions);
+
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-400">Erreur de chargement.</td></tr>';
+  }
+}
+
+function renderStudentSummary(sessions) {
+  // Regrouper par élève
+  const byStudent = {};
+  sessions.forEach(s => {
+    const key = s.student_name + '|' + s.class_id;
+    if (!byStudent[key]) byStudent[key] = { name: s.student_name, class_id: s.class_id, sessions: [] };
+    byStudent[key].sessions.push(s);
+  });
+
+  const summaryDiv = document.getElementById('student-summary');
+  const listDiv    = document.getElementById('student-summary-list');
+
+  const entries = Object.values(byStudent);
+  if (entries.length < 2) { summaryDiv.classList.add('hidden'); return; }
+
+  summaryDiv.classList.remove('hidden');
+  listDiv.innerHTML = entries.map(e => {
+    const totalScore = e.sessions.reduce((a, s) => a + s.score, 0);
+    const totalMax   = e.sessions.reduce((a, s) => a + s.total, 0);
+    const avg        = Math.round(totalScore / totalMax * 100);
+    const color      = avg >= 80 ? 'border-green-300 bg-green-50' : avg >= 50 ? 'border-orange-300 bg-orange-50' : 'border-red-200 bg-red-50';
+    const textColor  = avg >= 80 ? 'text-green-700' : avg >= 50 ? 'text-orange-600' : 'text-red-600';
+    return `
+      <div class="rounded-xl border-2 ${color} p-4 flex items-center justify-between">
+        <div>
+          <p class="font-bold text-gray-800">${e.name}</p>
+          <p class="text-xs text-gray-400">${e.class_id} · ${e.sessions.length} session${e.sessions.length > 1 ? 's' : ''}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-2xl font-black ${textColor}">${avg} %</p>
+          <p class="text-xs text-gray-400">${totalScore} / ${totalMax} pts</p>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Codes de classe ────────────────────────────────────────────────────────
+
+async function loadCodes() {
+  const r = await fetch(`${API}/class-codes`, { headers: { 'x-teacher-password': teacherPw } });
+  if (!r.ok) return;
+  const codes = await r.json();
+  const div = document.getElementById('codes-list');
+  if (!codes.length) {
+    div.innerHTML = '<p class="text-gray-300 text-sm">Aucun code créé.</p>';
+    return;
+  }
+  div.innerHTML = codes.map(c => `
+    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+      <div>
+        <span class="font-black text-blue-700 tracking-widest">${c.code}</span>
+        <span class="text-gray-500 text-xs ml-2">${c.class_name}</span>
+      </div>
+      <button onclick="deleteCode(${c.id})"
+        class="text-red-400 hover:text-red-600 text-xs transition" title="Supprimer">✕</button>
+    </div>`).join('');
+}
+
+async function createCode() {
+  const name = document.getElementById('new-class-name').value.trim();
+  if (!name) return;
+  const r = await fetch(`${API}/class-codes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-teacher-password': teacherPw },
+    body: JSON.stringify({ class_name: name })
+  });
+  if (!r.ok) return;
+  const data = await r.json();
+  document.getElementById('new-code-value').textContent = data.code;
+  document.getElementById('new-code-class').textContent = data.class_name;
+  document.getElementById('new-code-result').classList.remove('hidden');
+  document.getElementById('new-class-name').value = '';
+  loadCodes();
+
+  // Mettre à jour le filtre classe
+  const opt = document.createElement('option');
+  opt.value = data.code;
+  opt.textContent = data.code;
+  document.getElementById('filter-class').appendChild(opt);
+}
+
+async function deleteCode(id) {
+  if (!confirm('Supprimer ce code ? Les sessions existantes ne seront pas effacées.')) return;
+  await fetch(`${API}/class-codes/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-teacher-password': teacherPw }
+  });
+  loadCodes();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: upe2a-math
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: upe2a-math-db
+          property: connectionString
+      - key: TEACHER_PASSWORD
+        generateValue: true
+
+databases:
+  - name: upe2a-math-db
+    plan: free

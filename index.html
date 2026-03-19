@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maths UPE2A – Lycée Denis Diderot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .choice-btn { transition: all 0.15s ease; }
+    .choice-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+    .choice-btn.correct  { background: #dcfce7 !important; border-color: #16a34a !important; color: #166534 !important; }
+    .choice-btn.incorrect { background: #fee2e2 !important; border-color: #dc2626 !important; color: #991b1b !important; }
+    .fade-in { animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .card-hover { transition: all .2s; }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .tbtn-active { background: #2563eb !important; color: white !important; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+
+<!-- ── ÉCRAN 1 : Connexion ─────────────────────────────────────────────── -->
+<div id="screen-login" class="min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-sm space-y-6">
+    <div class="text-center">
+      <div class="text-6xl mb-3">🏫</div>
+      <h1 class="text-2xl font-bold text-gray-800">Maths UPE2A</h1>
+      <p class="text-gray-400 text-sm mt-1">Lycée Denis Diderot</p>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">Ton prénom et nom</label>
+        <input id="input-name" type="text" placeholder="Ex : Ana Garcia" autocomplete="off"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-blue-400 transition">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">Code de classe</label>
+        <input id="input-code" type="text" placeholder="Ex : ABC123" maxlength="6" autocomplete="off"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base uppercase tracking-widest focus:outline-none focus:border-blue-400 transition">
+      </div>
+      <p id="login-error" class="text-red-500 text-sm hidden text-center"></p>
+      <button onclick="doLogin()"
+        class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold hover:bg-blue-700 active:bg-blue-800 transition shadow-md">
+        Entrer →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ÉCRAN 2 : Menu principal ────────────────────────────────────────── -->
+<div id="screen-menu" class="hidden min-h-screen p-4">
+  <div class="max-w-lg mx-auto pt-6">
+    <div class="flex items-start justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">Bonjour, <span id="menu-name"></span> ! 👋</h1>
+        <p class="text-gray-400 text-sm mt-0.5">Choisis un exercice</p>
+      </div>
+      <button onclick="logout()" class="text-xs text-gray-400 hover:text-gray-600 mt-1 underline">Changer</button>
+    </div>
+
+    <!-- Carte Nombres -->
+    <div onclick="showNombresLevels()"
+      class="bg-white rounded-2xl shadow-md p-6 mb-4 cursor-pointer card-hover border-2 border-transparent hover:border-blue-200">
+      <div class="flex items-center gap-4">
+        <div class="text-5xl">🔢</div>
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-gray-800">Les nombres en français</h2>
+          <p class="text-gray-500 text-sm">Apprends les noms des nombres (1 à 1000)</p>
+          <div class="flex gap-2 mt-2">
+            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">QCM</span>
+            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">4 paliers</span>
+          </div>
+        </div>
+        <span class="text-gray-300 text-2xl">›</span>
+      </div>
+    </div>
+
+    <!-- Carte Tables -->
+    <div onclick="showTablesLevels()"
+      class="bg-white rounded-2xl shadow-md p-6 cursor-pointer card-hover border-2 border-transparent hover:border-green-200">
+      <div class="flex items-center gap-4">
+        <div class="text-5xl">✖️</div>
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-gray-800">Tables de multiplication</h2>
+          <p class="text-gray-500 text-sm">Tables de 2 à 10</p>
+          <div class="flex gap-2 mt-2">
+            <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">3 niveaux</span>
+            <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">Chiffres & lettres</span>
+          </div>
+        </div>
+        <span class="text-gray-300 text-2xl">›</span>
+      </div>
+    </div>
+
+    <!-- Historique -->
+    <div id="history-section" class="mt-8 hidden">
+      <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Tes dernières sessions</h3>
+      <div id="history-list" class="space-y-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ÉCRAN 3 : Sélection du niveau ──────────────────────────────────── -->
+<div id="screen-levels" class="hidden min-h-screen p-4">
+  <div class="max-w-lg mx-auto pt-6">
+    <button onclick="showMenu()" class="flex items-center gap-1 text-gray-400 hover:text-gray-700 mb-6 transition text-sm">
+      ← Retour
+    </button>
+    <h2 id="levels-title" class="text-2xl font-bold text-gray-800 mb-6"></h2>
+    <div id="levels-list" class="space-y-3"></div>
+  </div>
+</div>
+
+<!-- ── ÉCRAN 4 : Quiz ─────────────────────────────────────────────────── -->
+<div id="screen-quiz" class="hidden min-h-screen p-4">
+  <div class="max-w-lg mx-auto pt-4">
+
+    <!-- En-tête -->
+    <div class="flex items-center justify-between mb-3">
+      <button onclick="if(confirm('Quitter l\'exercice ?')) showMenu()"
+        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition text-lg">✕</button>
+      <p class="text-sm text-gray-500 font-medium">Question <span id="q-current">1</span> / <span id="q-total">10</span></p>
+      <p class="text-sm font-bold text-green-600">✓ <span id="q-score">0</span></p>
+    </div>
+
+    <!-- Barre de progression -->
+    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+      <div id="q-progress" class="bg-blue-500 h-2.5 rounded-full transition-all duration-500" style="width:0%"></div>
+    </div>
+
+    <!-- Carte question -->
+    <div id="question-card" class="bg-white rounded-2xl shadow-lg p-8 mb-5 text-center fade-in">
+      <p class="text-sm text-gray-400 mb-3 font-medium" id="q-instruction"></p>
+      <div id="q-question" class="font-bold text-blue-700 leading-tight"></div>
+    </div>
+
+    <!-- Choix QCM -->
+    <div id="q-choices" class="grid grid-cols-2 gap-3"></div>
+
+    <!-- Saisie libre -->
+    <div id="q-input-section" class="hidden space-y-3">
+      <input id="q-input" type="text" placeholder="Ta réponse…" autocomplete="off"
+        class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-xl text-center focus:outline-none focus:border-blue-400 transition">
+      <button id="q-validate-btn" onclick="submitInputAnswer()"
+        class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold hover:bg-blue-700 transition shadow">
+        Valider ✓
+      </button>
+    </div>
+
+    <!-- Feedback -->
+    <div id="q-feedback" class="hidden mt-4 p-4 rounded-xl text-center">
+      <p id="q-feedback-text" class="font-bold text-lg"></p>
+      <p id="q-feedback-detail" class="text-sm mt-1"></p>
+    </div>
+
+    <!-- Bouton Suivant -->
+    <button id="q-next" onclick="nextQuestion()"
+      class="hidden mt-4 w-full py-3 bg-gray-800 text-white rounded-xl text-lg font-bold hover:bg-gray-900 transition shadow">
+      Suivant →
+    </button>
+  </div>
+</div>
+
+<!-- ── ÉCRAN 5 : Résultat ─────────────────────────────────────────────── -->
+<div id="screen-result" class="hidden min-h-screen p-4 flex items-center justify-center">
+  <div class="max-w-sm w-full">
+    <div class="bg-white rounded-3xl shadow-2xl p-10 text-center fade-in">
+      <div class="text-7xl mb-4" id="result-emoji"></div>
+      <div id="result-stars" class="text-3xl mb-3"></div>
+      <h2 class="text-4xl font-black text-gray-800 mb-1">
+        <span id="result-score"></span><span class="text-gray-300"> / </span><span id="result-total"></span>
+      </h2>
+      <p class="text-gray-500 mb-8" id="result-message"></p>
+      <div class="space-y-3">
+        <button onclick="restartQuiz()"
+          class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold hover:bg-blue-700 transition shadow">
+          🔄 Recommencer
+        </button>
+        <button onclick="showMenu()"
+          class="w-full py-3 bg-gray-100 text-gray-700 rounded-xl text-lg font-bold hover:bg-gray-200 transition">
+          🏠 Menu principal
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONVERTISSEUR NOMBRE → FRANÇAIS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const UNITS = [
+  'zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
+  'dix','onze','douze','treize','quatorze','quinze','seize',
+  'dix-sept','dix-huit','dix-neuf'
+];
+const TENS = ['','','vingt','trente','quarante','cinquante','soixante'];
+
+function toFrench(n) {
+  if (n === 0) return 'zéro';
+  if (n < 20)  return UNITS[n];
+  if (n < 70) {
+    const t = Math.floor(n / 10), u = n % 10;
+    if (u === 0) return TENS[t];
+    if (u === 1) return TENS[t] + ' et un';
+    return TENS[t] + '-' + UNITS[u];
+  }
+  if (n < 80) {
+    const u = n - 60;
+    if (u === 11) return 'soixante et onze';
+    return 'soixante-' + UNITS[u];
+  }
+  if (n < 100) {
+    const u = n - 80;
+    if (u === 0) return 'quatre-vingts';
+    return 'quatre-vingt-' + UNITS[u];
+  }
+  if (n < 200) {
+    const r = n - 100;
+    return r === 0 ? 'cent' : 'cent ' + toFrench(r);
+  }
+  if (n < 1000) {
+    const h = Math.floor(n / 100), r = n % 100;
+    const prefix = UNITS[h] + ' cent';
+    return r === 0 ? prefix + 's' : prefix + ' ' + toFrench(r);
+  }
+  return 'mille';
+}
+
+// Normalise pour la comparaison (minuscules, sans accents, espaces/tirets uniformes)
+function normalize(s) {
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[-\s]+/g, ' ').trim();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ÉTAT GLOBAL
+// ═══════════════════════════════════════════════════════════════════════════
+
+let user = null;          // { name, classId, className }
+let quiz = null;          // { questions[], current, score, type, level }
+let lastQuizConfig = null;
+let selectedTable = 0;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+function show(id) {
+  ['login','menu','levels','quiz','result'].forEach(s => {
+    document.getElementById('screen-' + s).classList.toggle('hidden', s !== id);
+  });
+  if (id === 'result') {
+    document.getElementById('screen-result').classList.remove('hidden');
+    document.getElementById('screen-result').classList.add('flex');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONNEXION
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function doLogin() {
+  const name = document.getElementById('input-name').value.trim();
+  const code = document.getElementById('input-code').value.trim().toUpperCase();
+  const err  = document.getElementById('login-error');
+
+  if (name.length < 2) { showErr(err, 'Écris ton prénom et ton nom.'); return; }
+  if (code.length < 4) { showErr(err, 'Écris le code de classe.'); return; }
+
+  try {
+    const r = await fetch(`${API}/class-codes/verify?code=${code}`);
+    if (!r.ok) { showErr(err, 'Code de classe incorrect.'); return; }
+    const data = await r.json();
+    user = { name, classId: code, className: data.class_name };
+    err.classList.add('hidden');
+    showMenu();
+  } catch {
+    showErr(err, 'Erreur de connexion. Réessaie.');
+  }
+}
+
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function logout() {
+  user = null;
+  document.getElementById('input-name').value = '';
+  document.getElementById('input-code').value = '';
+  show('login');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MENU
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function showMenu() {
+  document.getElementById('menu-name').textContent = user.name.split(' ')[0];
+  show('menu');
+  loadHistory();
+}
+
+async function loadHistory() {
+  try {
+    const r = await fetch(`${API}/sessions/student?student_name=${encodeURIComponent(user.name)}&class_id=${user.classId}`);
+    if (!r.ok) return;
+    const sessions = await r.json();
+    if (!sessions.length) return;
+    document.getElementById('history-section').classList.remove('hidden');
+    document.getElementById('history-list').innerHTML = sessions.slice(0, 5).map(s => {
+      const pct = s.score / s.total;
+      const color = pct >= 0.8 ? 'text-green-600' : pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
+      return `
+        <div class="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm">
+          <div>
+            <p class="font-semibold text-gray-700 text-sm">${labelSession(s.exercise_type, s.level)}</p>
+            <p class="text-xs text-gray-400">${new Date(s.completed_at).toLocaleDateString('fr-FR')}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-bold ${color}">${s.score}/${s.total}</p>
+            <p class="text-xs">${stars(s.score, s.total)}</p>
+          </div>
+        </div>`;
+    }).join('');
+  } catch {}
+}
+
+function labelSession(type, level) {
+  if (type === 'nombres') return `Nombres 1–${level}`;
+  const [table, mode] = level.split('_');
+  const t = table === '0' ? 'Toutes les tables' : `Table de ${table}`;
+  const m = mode === 'A' ? 'QCM' : mode === 'B' ? 'saisie chiffres' : 'saisie lettres';
+  return `${t} (${m})`;
+}
+
+function stars(score, total) {
+  const p = score / total;
+  if (p >= 0.9) return '⭐⭐⭐';
+  if (p >= 0.7) return '⭐⭐';
+  if (p >= 0.5) return '⭐';
+  return '';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SÉLECTION DU NIVEAU — NOMBRES
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showNombresLevels() {
+  document.getElementById('levels-title').textContent = '🔢 Les nombres en français';
+  const paliers = [
+    { max: 10,   label: 'Palier 1 — 1 à 10',   sub: '10 nombres de base' },
+    { max: 20,   label: 'Palier 2 — 1 à 20',   sub: '20 nombres' },
+    { max: 100,  label: 'Palier 3 — 1 à 100',  sub: 'Dizaines et unités' },
+    { max: 1000, label: 'Palier 4 — 1 à 1000', sub: 'Centaines et millier' },
+  ];
+  document.getElementById('levels-list').innerHTML = paliers.map(p => `
+    <button onclick="startNombresQuiz(${p.max})"
+      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-blue-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="font-bold text-gray-800 text-lg">${p.label}</p>
+          <p class="text-sm text-gray-400 mt-0.5">${p.sub}</p>
+        </div>
+        <span class="text-blue-400 text-2xl">›</span>
+      </div>
+    </button>`).join('');
+  show('levels');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SÉLECTION DU NIVEAU — TABLES
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showTablesLevels() {
+  document.getElementById('levels-title').textContent = '✖️ Tables de multiplication';
+  selectedTable = 0;
+
+  const modes = [
+    { id: 'A', label: 'Niveau A — QCM',          sub: 'Choisis la bonne réponse (en chiffres)' },
+    { id: 'B', label: 'Niveau B — Saisie chiffres', sub: 'Écris la réponse en chiffres' },
+    { id: 'C', label: 'Niveau C — Saisie en lettres', sub: 'Écris la réponse en français' },
+  ];
+
+  document.getElementById('levels-list').innerHTML = `
+    <div class="bg-white rounded-2xl shadow p-5 mb-4">
+      <p class="font-semibold text-gray-600 mb-3 text-sm">Quelle table ?</p>
+      <div class="grid grid-cols-4 gap-2">
+        <button onclick="selectTable(0)" id="tbtn-0"
+          class="tbtn col-span-4 py-2 rounded-xl font-bold text-sm tbtn-active transition">
+          Toutes les tables
+        </button>
+        ${[2,3,4,5,6,7,8,9,10].map(n => `
+          <button onclick="selectTable(${n})" id="tbtn-${n}"
+            class="tbtn py-2 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition">
+            ×${n}
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-5">
+      <p class="font-semibold text-gray-600 mb-3 text-sm">Quel niveau ?</p>
+      <div class="space-y-2">
+        ${modes.map(m => `
+          <button onclick="startTablesQuiz(selectedTable, '${m.id}')"
+            class="w-full text-left p-4 rounded-xl bg-gray-50 border-2 border-gray-100 hover:border-green-300 hover:bg-green-50 transition card-hover">
+            <p class="font-bold text-gray-800">${m.label}</p>
+            <p class="text-sm text-gray-400 mt-0.5">${m.sub}</p>
+          </button>`).join('')}
+      </div>
+    </div>`;
+
+  show('levels');
+}
+
+function selectTable(n) {
+  selectedTable = n;
+  document.querySelectorAll('.tbtn').forEach(btn => {
+    const t = parseInt(btn.id.replace('tbtn-', ''));
+    btn.classList.toggle('tbtn-active', t === n);
+    btn.classList.toggle('bg-gray-100',  t !== n);
+    btn.classList.toggle('text-gray-700', t !== n);
+    btn.classList.toggle('hover:bg-blue-100', t !== n);
+    btn.classList.toggle('hover:text-blue-700', t !== n);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GÉNÉRATION DES QUESTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function makeNombresQuestion(max) {
+  const correct = randInt(1, max);
+  const nums = new Set([correct]);
+  // Distracteurs : mélange de nombres proches et aléatoires du même palier
+  let attempts = 0;
+  while (nums.size < 4 && attempts < 50) {
+    attempts++;
+    // Parfois proches (±1 à ±5), parfois aléatoires
+    const nearby = Math.random() < 0.5;
+    const n = nearby
+      ? correct + randInt(1, 5) * (Math.random() < 0.5 ? 1 : -1)
+      : randInt(1, max);
+    if (n >= 1 && n <= max && n !== correct) nums.add(n);
+  }
+  // Compléter si besoin avec des aléatoires
+  while (nums.size < 4) {
+    const n = randInt(1, max);
+    if (n !== correct) nums.add(n);
+  }
+
+  const choices = shuffle([...nums].map(n => ({ display: toFrench(n), isCorrect: n === correct })));
+  return {
+    instruction: 'Quel est le nom de ce nombre ?',
+    question: correct.toString(),
+    qSize: 'text-7xl',
+    type: 'qcm',
+    choices,
+    correctAnswer: toFrench(correct)
+  };
+}
+
+function makeTableDistractors(correct) {
+  // Résultats proches et d'autres tables pour créer des confusions plausibles
+  const pool = new Set();
+  for (let d = 1; d <= 6; d++) {
+    if (correct - d > 0) pool.add(correct - d);
+    pool.add(correct + d);
+  }
+  for (let i = 2; i <= 10; i++)
+    for (let j = 1; j <= 10; j++)
+      if (i * j !== correct) pool.add(i * j);
+
+  return shuffle([...pool].filter(v => v !== correct)).slice(0, 3);
+}
+
+function makeTableQuestion(tableNum, mode) {
+  const a = tableNum === 0 ? randInt(2, 10) : tableNum;
+  const b = randInt(1, 10);
+  const correct = a * b;
+
+  if (mode === 'A') {
+    const distractors = makeTableDistractors(correct);
+    const choices = shuffle([
+      { display: correct.toString(), isCorrect: true },
+      ...distractors.map(d => ({ display: d.toString(), isCorrect: false }))
+    ]);
+    return {
+      instruction: 'Quelle est la réponse ?',
+      question: `${a} × ${b} = ?`,
+      qSize: 'text-5xl',
+      type: 'qcm',
+      choices,
+      correctAnswer: correct.toString()
+    };
+  }
+  if (mode === 'B') {
+    return {
+      instruction: 'Écris la réponse en chiffres',
+      question: `${a} × ${b} = ?`,
+      qSize: 'text-5xl',
+      type: 'input_num',
+      correctAnswer: correct.toString()
+    };
+  }
+  // mode C
+  return {
+    instruction: 'Écris la réponse en français',
+    question: `${a} × ${b} = ?`,
+    qSize: 'text-5xl',
+    type: 'input_letters',
+    correctAnswer: toFrench(correct)
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LANCEMENT DU QUIZ
+// ═══════════════════════════════════════════════════════════════════════════
+
+const NB_QUESTIONS = 10;
+
+function startNombresQuiz(max) {
+  const questions = Array.from({ length: NB_QUESTIONS }, () => makeNombresQuestion(max));
+  lastQuizConfig = { type: 'nombres', level: max.toString() };
+  beginQuiz(questions, 'nombres', max.toString());
+}
+
+function startTablesQuiz(tableNum, mode) {
+  const questions = Array.from({ length: NB_QUESTIONS }, () => makeTableQuestion(tableNum, mode));
+  lastQuizConfig = { type: 'tables', level: `${tableNum}_${mode}`, tableNum, mode };
+  beginQuiz(questions, 'tables', `${tableNum}_${mode}`);
+}
+
+function restartQuiz() {
+  if (lastQuizConfig.type === 'nombres') {
+    startNombresQuiz(parseInt(lastQuizConfig.level));
+  } else {
+    startTablesQuiz(lastQuizConfig.tableNum, lastQuizConfig.mode);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MOTEUR DU QUIZ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function beginQuiz(questions, type, level) {
+  quiz = { questions, current: 0, score: 0, type, level };
+  document.getElementById('q-total').textContent = questions.length;
+  show('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q   = quiz.questions[quiz.current];
+  const idx = quiz.current;
+
+  document.getElementById('q-current').textContent  = idx + 1;
+  document.getElementById('q-score').textContent    = quiz.score;
+  document.getElementById('q-progress').style.width = `${(idx / quiz.questions.length) * 100}%`;
+  document.getElementById('q-instruction').textContent = q.instruction;
+
+  const qEl = document.getElementById('q-question');
+  qEl.textContent  = q.question;
+  qEl.className    = `${q.qSize} font-bold text-blue-700 leading-tight`;
+
+  document.getElementById('q-feedback').classList.add('hidden');
+  document.getElementById('q-next').classList.add('hidden');
+
+  // Animate question card
+  const card = document.getElementById('question-card');
+  card.classList.remove('fade-in');
+  void card.offsetWidth;
+  card.classList.add('fade-in');
+
+  if (q.type === 'qcm') {
+    document.getElementById('q-choices').classList.remove('hidden');
+    document.getElementById('q-input-section').classList.add('hidden');
+    document.getElementById('q-choices').innerHTML = q.choices.map(c => `
+      <button onclick="handleQCM(this, ${c.isCorrect}, \`${c.display.replace(/`/g, '\\`')}\`)"
+        class="choice-btn w-full py-5 px-3 border-2 border-gray-200 rounded-xl text-lg font-semibold text-gray-700 bg-white text-center">
+        ${c.display}
+      </button>`).join('');
+  } else {
+    document.getElementById('q-choices').classList.add('hidden');
+    document.getElementById('q-input-section').classList.remove('hidden');
+    const inp = document.getElementById('q-input');
+    inp.value    = '';
+    inp.disabled = false;
+    document.getElementById('q-validate-btn').disabled = false;
+    inp.onkeydown = e => { if (e.key === 'Enter') submitInputAnswer(); };
+    setTimeout(() => inp.focus(), 100);
+  }
+}
+
+function handleQCM(btn, isCorrect, display) {
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    b.classList.remove('hover:border-blue-400', 'hover:bg-blue-50');
+  });
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    quiz.score++;
+    showFeedback(true, null);
+  } else {
+    btn.classList.add('incorrect');
+    // Montrer la bonne réponse en vert
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      if (b.textContent.trim() === quiz.questions[quiz.current].correctAnswer) {
+        b.classList.add('correct');
+      }
+    });
+    showFeedback(false, quiz.questions[quiz.current].correctAnswer);
+  }
+}
+
+function submitInputAnswer() {
+  const inp = document.getElementById('q-input');
+  const val = inp.value.trim();
+  if (!val) return;
+
+  inp.disabled = true;
+  document.getElementById('q-validate-btn').disabled = true;
+
+  const q = quiz.questions[quiz.current];
+  let correct;
+  if (q.type === 'input_num') {
+    correct = parseInt(val) === parseInt(q.correctAnswer);
+  } else {
+    correct = normalize(val) === normalize(q.correctAnswer);
+  }
+
+  if (correct) quiz.score++;
+  showFeedback(correct, correct ? null : q.correctAnswer);
+}
+
+function showFeedback(correct, correctAnswer) {
+  const fb     = document.getElementById('q-feedback');
+  const text   = document.getElementById('q-feedback-text');
+  const detail = document.getElementById('q-feedback-detail');
+
+  if (correct) {
+    fb.className  = 'mt-4 p-4 rounded-xl text-center bg-green-50 border-2 border-green-200';
+    text.className = 'font-bold text-lg text-green-700';
+    text.textContent  = '✓ Bravo ! C\'est correct !';
+    detail.textContent = '';
+  } else {
+    fb.className  = 'mt-4 p-4 rounded-xl text-center bg-red-50 border-2 border-red-200';
+    text.className = 'font-bold text-lg text-red-600';
+    text.textContent  = '✗ Pas tout à fait…';
+    detail.textContent = `La bonne réponse : ${correctAnswer}`;
+    detail.className   = 'text-sm mt-1 text-red-500 font-semibold';
+  }
+
+  document.getElementById('q-score').textContent = quiz.score;
+  fb.classList.remove('hidden');
+  document.getElementById('q-next').classList.remove('hidden');
+}
+
+function nextQuestion() {
+  quiz.current++;
+  if (quiz.current >= quiz.questions.length) {
+    finishQuiz();
+  } else {
+    renderQuestion();
+  }
+}
+
+async function finishQuiz() {
+  const { score, questions, type, level } = quiz;
+  const total = questions.length;
+  const pct   = score / total;
+
+  // Sauvegarde en base
+  try {
+    await fetch(`${API}/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ student_name: user.name, class_id: user.classId, exercise_type: type, level, score, total })
+    });
+  } catch {}
+
+  // Affichage résultat
+  document.getElementById('result-score').textContent = score;
+  document.getElementById('result-total').textContent = total;
+
+  if (pct >= 0.9) {
+    document.getElementById('result-emoji').textContent   = '🏆';
+    document.getElementById('result-message').textContent = 'Excellent ! Tu maîtrises très bien !';
+    document.getElementById('result-stars').textContent   = '⭐⭐⭐';
+  } else if (pct >= 0.7) {
+    document.getElementById('result-emoji').textContent   = '😊';
+    document.getElementById('result-message').textContent = 'Très bien ! Continue comme ça !';
+    document.getElementById('result-stars').textContent   = '⭐⭐';
+  } else if (pct >= 0.5) {
+    document.getElementById('result-emoji').textContent   = '💪';
+    document.getElementById('result-message').textContent = 'Bien ! Entraîne-toi encore.';
+    document.getElementById('result-stars').textContent   = '⭐';
+  } else {
+    document.getElementById('result-emoji').textContent   = '📚';
+    document.getElementById('result-message').textContent = 'Continue de pratiquer, tu vas progresser !';
+    document.getElementById('result-stars').textContent   = '';
+  }
+
+  show('result');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EVENTS CLAVIER (LOGIN)
+// ═══════════════════════════════════════════════════════════════════════════
+
+document.getElementById('input-code').addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+document.getElementById('input-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('input-code').focus();
+});
+document.getElementById('input-code').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>
