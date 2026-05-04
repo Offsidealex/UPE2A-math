@@ -51,7 +51,7 @@
 <!-- ── ÉCRAN 2 : Menu principal ────────────────────────────────────────── -->
 <div id="screen-menu" class="hidden min-h-screen p-4">
   <div class="max-w-lg mx-auto pt-6">
-    <div class="flex items-start justify-between mb-8">
+    <div class="flex items-start justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Bonjour, <span id="menu-name"></span> ! 👋</h1>
         <p class="text-gray-400 text-sm mt-0.5">Choisis un exercice</p>
@@ -59,74 +59,41 @@
       <button onclick="logout()" class="text-xs text-gray-400 hover:text-gray-600 mt-1 underline">Changer</button>
     </div>
 
-    <!-- Carte Nombres -->
-    <div onclick="showNombresLevels()"
-      class="bg-white rounded-2xl shadow-md p-6 mb-4 cursor-pointer card-hover border-2 border-transparent hover:border-blue-200">
-      <div class="flex items-center gap-4">
-        <div class="text-5xl">🔢</div>
-        <div class="flex-1">
-          <h2 class="text-xl font-bold text-gray-800">Les nombres en français</h2>
-          <p class="text-gray-500 text-sm">Apprends les noms des nombres (1 à 1000)</p>
-          <div class="flex gap-2 mt-2">
-            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">QCM</span>
-            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">4 paliers</span>
-          </div>
-        </div>
-        <span class="text-gray-300 text-2xl">›</span>
+    <div class="grid grid-cols-2 gap-3">
+      <div onclick="showNombresLevels()" class="bg-blue-50 border-2 border-transparent hover:border-blue-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+        <div class="text-4xl mb-2">🔢</div>
+        <p class="font-bold text-gray-800 text-sm">Nombres</p>
+        <p class="text-xs text-gray-400 mt-0.5">1 à 1000</p>
+        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full mt-2">4 paliers</span>
       </div>
-    </div>
-
-    <!-- Carte Tables -->
-    <div onclick="showTablesLevels()"
-      class="bg-white rounded-2xl shadow-md p-6 cursor-pointer card-hover border-2 border-transparent hover:border-green-200">
-      <div class="flex items-center gap-4">
-        <div class="text-5xl">✖️</div>
-        <div class="flex-1">
-          <h2 class="text-xl font-bold text-gray-800">Tables de multiplication</h2>
-          <p class="text-gray-500 text-sm">Tables de 2 à 10</p>
-          <div class="flex gap-2 mt-2">
-            <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">3 niveaux</span>
-            <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">Chiffres & lettres</span>
-          </div>
-        </div>
-        <span class="text-gray-300 text-2xl">›</span>
+      <div onclick="showTablesLevels()" class="bg-green-50 border-2 border-transparent hover:border-green-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+        <div class="text-4xl mb-2">✖️</div>
+        <p class="font-bold text-gray-800 text-sm">Tables</p>
+        <p class="text-xs text-gray-400 mt-0.5">De 2 à 10</p>
+        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-2">3 niveaux</span>
       </div>
-    </div>
-
-    <!-- Carte Additions -->
-    <div onclick="showAdditionsLevels()"
-      class="bg-white rounded-2xl shadow-md p-6 mb-4 cursor-pointer card-hover border-2 border-transparent hover:border-orange-200">
-      <div class="flex items-center gap-4">
-        <div class="text-5xl">➕</div>
-        <div class="flex-1">
-          <h2 class="text-xl font-bold text-gray-800">Additions</h2>
-          <p class="text-gray-500 text-sm">Additions de 0 à 100</p>
-          <div class="flex gap-2 mt-2">
-            <span class="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded-full font-medium">4 niveaux</span>
-          </div>
-        </div>
-        <span class="text-gray-300 text-2xl">›</span>
+      <div onclick="showAdditionsLevels()" class="bg-orange-50 border-2 border-transparent hover:border-orange-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+        <div class="text-4xl mb-2">➕</div>
+        <p class="font-bold text-gray-800 text-sm">Additions</p>
+        <p class="text-xs text-gray-400 mt-0.5">0 à 100</p>
+        <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
       </div>
-    </div>
-
-    <!-- Carte Soustractions -->
-    <div onclick="showSoustractionsLevels()"
-      class="bg-white rounded-2xl shadow-md p-6 mb-4 cursor-pointer card-hover border-2 border-transparent hover:border-red-200">
-      <div class="flex items-center gap-4">
-        <div class="text-5xl">➖</div>
-        <div class="flex-1">
-          <h2 class="text-xl font-bold text-gray-800">Soustractions</h2>
-          <p class="text-gray-500 text-sm">Soustractions de 0 à 100</p>
-          <div class="flex gap-2 mt-2">
-            <span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-medium">4 niveaux</span>
-          </div>
-        </div>
-        <span class="text-gray-300 text-2xl">›</span>
+      <div onclick="showSoustractionsLevels()" class="bg-red-50 border-2 border-transparent hover:border-red-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+        <div class="text-4xl mb-2">➖</div>
+        <p class="font-bold text-gray-800 text-sm">Soustractions</p>
+        <p class="text-xs text-gray-400 mt-0.5">0 à 100</p>
+        <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
+      </div>
+      <div onclick="showCarresMagiquesLevels()" class="col-span-2 bg-purple-50 border-2 border-transparent hover:border-purple-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+        <div class="text-4xl mb-2">🔲</div>
+        <p class="font-bold text-gray-800 text-sm">Carrés magiques</p>
+        <p class="text-xs text-gray-400 mt-0.5">Complète la grille 3×3</p>
+        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
       </div>
     </div>
 
     <!-- Historique -->
-    <div id="history-section" class="mt-8 hidden">
+    <div id="history-section" class="mt-6 hidden">
       <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Tes dernières sessions</h3>
       <div id="history-list" class="space-y-2"></div>
     </div>
@@ -215,6 +182,31 @@
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ── ÉCRAN : Carré magique ───────────────────────────────────────────── -->
+<div id="screen-magic" class="hidden min-h-screen p-4">
+  <div class="max-w-lg mx-auto pt-6">
+    <button onclick="showMenu()" class="flex items-center gap-1 text-gray-400 hover:text-gray-700 mb-4 transition text-sm">← Menu</button>
+    <h2 class="text-xl font-bold text-gray-800 mb-1">🔲 Carré magique</h2>
+    <p id="magic-desc" class="text-sm text-gray-500 mb-6"></p>
+
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
+      <p class="text-center text-xs text-gray-400 mb-4">La somme de chaque ligne, colonne et diagonale est la même.</p>
+      <div id="magic-grid" class="grid grid-cols-3 gap-2 max-w-xs mx-auto"></div>
+    </div>
+
+    <p id="magic-feedback" class="text-center font-bold text-lg mb-4 hidden"></p>
+
+    <button onclick="checkCarreMagique()" id="magic-check-btn"
+      class="w-full py-3 bg-purple-600 text-white rounded-xl text-lg font-bold hover:bg-purple-700 transition shadow mb-3">
+      Vérifier ✓
+    </button>
+    <button onclick="startCarreMagique(currentMagicLevel)" id="magic-retry-btn"
+      class="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition">
+      Nouveau carré 🔄
+    </button>
   </div>
 </div>
 
@@ -329,7 +321,7 @@ let selectedTable = 0;
 // ═══════════════════════════════════════════════════════════════════════════
 
 function show(id) {
-  ['login','menu','levels','quiz','result'].forEach(s => {
+  ['login','menu','levels','quiz','result','magic'].forEach(s => {
     document.getElementById('screen-' + s).classList.toggle('hidden', s !== id);
   });
   if (id === 'result') {
@@ -407,6 +399,7 @@ function labelSession(type, level) {
   if (type === 'nombres') return `Nombres 1–${level}`;
   if (type === 'additions') return `Additions niveau ${level}`;
   if (type === 'soustractions') return `Soustractions niveau ${level}`;
+  if (type === 'magic') return `Carré magique niveau ${level}`;
   const [table, mode] = level.split('_');
   const t = table === '0' ? 'Toutes les tables' : `Table de ${table}`;
   const m = mode === 'A' ? 'QCM' : mode === 'B' ? 'saisie chiffres' : 'saisie lettres';
@@ -553,6 +546,106 @@ function showSoustractionsLevels() {
       </div>
     </button>`).join('');
   show('levels');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CARRÉS MAGIQUES
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MAGIC_SQUARES = [
+  [[2,9,4],[7,5,3],[6,1,8]],
+  [[6,7,2],[1,5,9],[8,3,4]],
+  [[8,1,6],[3,5,7],[4,9,2]],
+  [[4,3,8],[9,5,1],[2,7,6]],
+  [[4,9,2],[3,5,7],[8,1,6]],
+  [[6,1,8],[7,5,3],[2,9,4]],
+  [[2,7,6],[9,5,1],[4,3,8]],
+  [[8,3,4],[1,5,9],[6,7,2]],
+];
+
+const MAGIC_HIDDEN = [null, 3, 5, 7, 8];
+let currentMagicLevel = 1;
+let currentMagicSquare = null;
+let magicHiddenCells = [];
+
+function showCarresMagiquesLevels() {
+  document.getElementById('levels-title').textContent = '🔲 Carrés magiques';
+  const niveaux = [
+    { id: 1, label: 'Niveau 1 — Facile',    sub: '3 cases à trouver' },
+    { id: 2, label: 'Niveau 2 — Moyen',     sub: '5 cases à trouver' },
+    { id: 3, label: 'Niveau 3 — Difficile', sub: '7 cases à trouver' },
+    { id: 4, label: 'Niveau 4 — Expert',    sub: '8 cases à trouver' },
+  ];
+  document.getElementById('levels-list').innerHTML = niveaux.map(n => `
+    <button onclick="startCarreMagique(${n.id})"
+      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-purple-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="font-bold text-gray-800 text-lg">${n.label}</p>
+          <p class="text-sm text-gray-400 mt-0.5">${n.sub}</p>
+        </div>
+        <span class="text-purple-400 text-2xl">›</span>
+      </div>
+    </button>`).join('');
+  show('levels');
+}
+
+function startCarreMagique(level) {
+  currentMagicLevel = level;
+  currentMagicSquare = MAGIC_SQUARES[randInt(0, MAGIC_SQUARES.length - 1)].map(r => [...r]);
+  const nbHidden = MAGIC_HIDDEN[level];
+
+  const allCells = [];
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) allCells.push([r, c]);
+  magicHiddenCells = shuffle(allCells).slice(0, nbHidden);
+
+  const hiddenSet = new Set(magicHiddenCells.map(([r,c]) => `${r}-${c}`));
+  const magicSum = currentMagicSquare[0].reduce((s, v) => s + v, 0);
+
+  document.getElementById('magic-desc').textContent = `Complète la grille — la somme magique est ${magicSum}.`;
+  document.getElementById('magic-feedback').classList.add('hidden');
+  document.getElementById('magic-check-btn').disabled = false;
+  document.getElementById('magic-check-btn').classList.remove('opacity-50');
+
+  document.getElementById('magic-grid').innerHTML = currentMagicSquare.flatMap((row, r) =>
+    row.map((val, c) => {
+      const hidden = hiddenSet.has(`${r}-${c}`);
+      return hidden
+        ? `<input id="mc-${r}-${c}" type="number" min="1" max="100"
+            class="w-full aspect-square text-center text-2xl font-bold border-2 border-purple-300 rounded-xl focus:outline-none focus:border-purple-500 bg-white">`
+        : `<div class="w-full aspect-square flex items-center justify-center text-2xl font-bold bg-gray-100 rounded-xl text-gray-700">${val}</div>`;
+    })
+  ).join('');
+
+  show('magic');
+}
+
+function checkCarreMagique() {
+  let allCorrect = true;
+  for (const [r, c] of magicHiddenCells) {
+    const inp = document.getElementById(`mc-${r}-${c}`);
+    const val = parseInt(inp.value);
+    if (val === currentMagicSquare[r][c]) {
+      inp.classList.add('border-green-400', 'bg-green-50');
+      inp.classList.remove('border-purple-300', 'border-red-400', 'bg-red-50');
+    } else {
+      inp.classList.add('border-red-400', 'bg-red-50');
+      inp.classList.remove('border-purple-300', 'border-green-400', 'bg-green-50');
+      allCorrect = false;
+    }
+  }
+  const fb = document.getElementById('magic-feedback');
+  fb.classList.remove('hidden', 'text-green-600', 'text-red-600');
+  if (allCorrect) {
+    fb.textContent = '🎉 Bravo, c\'est correct !';
+    fb.classList.add('text-green-600');
+    document.getElementById('magic-check-btn').disabled = true;
+    document.getElementById('magic-check-btn').classList.add('opacity-50');
+    saveSession({ student_name: user.name, class_id: user.classId, exercise_type: 'magic', level: currentMagicLevel.toString(), score: 1, total: 1 });
+  } else {
+    fb.textContent = '❌ Pas tout à fait, réessaie !';
+    fb.classList.add('text-red-600');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
