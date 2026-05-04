@@ -36,7 +36,7 @@
       </div>
       <div>
         <label class="block text-sm font-semibold text-gray-600 mb-1">Code de classe</label>
-        <input id="input-code" type="text" placeholder="Ex : ABC123" maxlength="6" autocomplete="off"
+        <input id="input-code" type="text" placeholder="Ex : ABC123" maxlength="10" autocomplete="off"
           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base uppercase tracking-widest focus:outline-none focus:border-blue-400 transition">
       </div>
       <p id="login-error" class="text-red-500 text-sm hidden text-center"></p>
@@ -187,7 +187,53 @@
 </div>
 
 <script>
-const API = '';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ⚙️  CODES DE CLASSE — à modifier selon tes besoins
+//     Format : 'CODE': 'Nom affiché'
+// ═══════════════════════════════════════════════════════════════════════════
+
+const CLASS_CODES = {
+  'UPE2A':    'UPE2A',
+  'DIDEROT':  'Lycée Denis Diderot',
+  'MATHS1':   'Groupe 1',
+  'MATHS2':   'Groupe 2',
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 💾  STOCKAGE LOCAL (localStorage)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const LS_USER     = 'upe2a_user';
+const LS_SESSIONS = 'upe2a_sessions';  // clé unique pour toutes les sessions
+
+function saveUser(u) {
+  localStorage.setItem(LS_USER, JSON.stringify(u));
+}
+
+function loadUser() {
+  try { return JSON.parse(localStorage.getItem(LS_USER)); } catch { return null; }
+}
+
+function clearUser() {
+  localStorage.removeItem(LS_USER);
+}
+
+// Sessions : tableau d'objets { student_name, class_id, exercise_type, level, score, total, completed_at }
+function getSessions() {
+  try { return JSON.parse(localStorage.getItem(LS_SESSIONS)) || []; } catch { return []; }
+}
+
+function saveSession(session) {
+  const sessions = getSessions();
+  sessions.unshift({ ...session, completed_at: new Date().toISOString() });
+  // On garde max 200 sessions au total
+  localStorage.setItem(LS_SESSIONS, JSON.stringify(sessions.slice(0, 200)));
+}
+
+function getStudentSessions(name, classId) {
+  return getSessions().filter(s => s.student_name === name && s.class_id === classId);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONVERTISSEUR NOMBRE → FRANÇAIS
@@ -231,7 +277,6 @@ function toFrench(n) {
   return 'mille';
 }
 
-// Normalise pour la comparaison (minuscules, sans accents, espaces/tirets uniformes)
 function normalize(s) {
   return s.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -242,8 +287,8 @@ function normalize(s) {
 // ÉTAT GLOBAL
 // ═══════════════════════════════════════════════════════════════════════════
 
-let user = null;          // { name, classId, className }
-let quiz = null;          // { questions[], current, score, type, level }
+let user = null;
+let quiz = null;
 let lastQuizConfig = null;
 let selectedTable = 0;
 
@@ -265,24 +310,21 @@ function show(id) {
 // CONNEXION
 // ═══════════════════════════════════════════════════════════════════════════
 
-async function doLogin() {
+function doLogin() {
   const name = document.getElementById('input-name').value.trim();
   const code = document.getElementById('input-code').value.trim().toUpperCase();
   const err  = document.getElementById('login-error');
 
   if (name.length < 2) { showErr(err, 'Écris ton prénom et ton nom.'); return; }
-  if (code.length < 4) { showErr(err, 'Écris le code de classe.'); return; }
+  if (code.length < 3) { showErr(err, 'Écris le code de classe.'); return; }
 
-  try {
-    const r = await fetch(`${API}/class-codes/verify?code=${code}`);
-    if (!r.ok) { showErr(err, 'Code de classe incorrect.'); return; }
-    const data = await r.json();
-    user = { name, classId: code, className: data.class_name };
-    err.classList.add('hidden');
-    showMenu();
-  } catch {
-    showErr(err, 'Erreur de connexion. Réessaie.');
-  }
+  const className = CLASS_CODES[code];
+  if (!className) { showErr(err, 'Code de classe incorrect.'); return; }
+
+  user = { name, classId: code, className };
+  err.classList.add('hidden');
+  saveUser(user);
+  showMenu();
 }
 
 function showErr(el, msg) {
@@ -292,6 +334,7 @@ function showErr(el, msg) {
 
 function logout() {
   user = null;
+  clearUser();
   document.getElementById('input-name').value = '';
   document.getElementById('input-code').value = '';
   show('login');
@@ -301,35 +344,34 @@ function logout() {
 // MENU
 // ═══════════════════════════════════════════════════════════════════════════
 
-async function showMenu() {
+function showMenu() {
   document.getElementById('menu-name').textContent = user.name.split(' ')[0];
   show('menu');
   loadHistory();
 }
 
-async function loadHistory() {
-  try {
-    const r = await fetch(`${API}/sessions/student?student_name=${encodeURIComponent(user.name)}&class_id=${user.classId}`);
-    if (!r.ok) return;
-    const sessions = await r.json();
-    if (!sessions.length) return;
-    document.getElementById('history-section').classList.remove('hidden');
-    document.getElementById('history-list').innerHTML = sessions.slice(0, 5).map(s => {
-      const pct = s.score / s.total;
-      const color = pct >= 0.8 ? 'text-green-600' : pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
-      return `
-        <div class="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="font-semibold text-gray-700 text-sm">${labelSession(s.exercise_type, s.level)}</p>
-            <p class="text-xs text-gray-400">${new Date(s.completed_at).toLocaleDateString('fr-FR')}</p>
-          </div>
-          <div class="text-right">
-            <p class="font-bold ${color}">${s.score}/${s.total}</p>
-            <p class="text-xs">${stars(s.score, s.total)}</p>
-          </div>
-        </div>`;
-    }).join('');
-  } catch {}
+function loadHistory() {
+  const sessions = getStudentSessions(user.name, user.classId);
+  if (!sessions.length) {
+    document.getElementById('history-section').classList.add('hidden');
+    return;
+  }
+  document.getElementById('history-section').classList.remove('hidden');
+  document.getElementById('history-list').innerHTML = sessions.slice(0, 5).map(s => {
+    const pct = s.score / s.total;
+    const color = pct >= 0.8 ? 'text-green-600' : pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
+    return `
+      <div class="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm">
+        <div>
+          <p class="font-semibold text-gray-700 text-sm">${labelSession(s.exercise_type, s.level)}</p>
+          <p class="text-xs text-gray-400">${new Date(s.completed_at).toLocaleDateString('fr-FR')}</p>
+        </div>
+        <div class="text-right">
+          <p class="font-bold ${color}">${s.score}/${s.total}</p>
+          <p class="text-xs">${stars(s.score, s.total)}</p>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function labelSession(type, level) {
@@ -383,8 +425,8 @@ function showTablesLevels() {
   selectedTable = 0;
 
   const modes = [
-    { id: 'A', label: 'Niveau A — QCM',          sub: 'Choisis la bonne réponse (en chiffres)' },
-    { id: 'B', label: 'Niveau B — Saisie chiffres', sub: 'Écris la réponse en chiffres' },
+    { id: 'A', label: 'Niveau A — QCM',               sub: 'Choisis la bonne réponse (en chiffres)' },
+    { id: 'B', label: 'Niveau B — Saisie chiffres',   sub: 'Écris la réponse en chiffres' },
     { id: 'C', label: 'Niveau C — Saisie en lettres', sub: 'Écris la réponse en français' },
   ];
 
@@ -423,9 +465,9 @@ function selectTable(n) {
   document.querySelectorAll('.tbtn').forEach(btn => {
     const t = parseInt(btn.id.replace('tbtn-', ''));
     btn.classList.toggle('tbtn-active', t === n);
-    btn.classList.toggle('bg-gray-100',  t !== n);
+    btn.classList.toggle('bg-gray-100',   t !== n);
     btn.classList.toggle('text-gray-700', t !== n);
-    btn.classList.toggle('hover:bg-blue-100', t !== n);
+    btn.classList.toggle('hover:bg-blue-100',   t !== n);
     btn.classList.toggle('hover:text-blue-700', t !== n);
   });
 }
@@ -445,23 +487,19 @@ function shuffle(arr) {
 function makeNombresQuestion(max, correct) {
   if (correct === undefined) correct = randInt(1, max);
   const nums = new Set([correct]);
-  // Distracteurs : mélange de nombres proches et aléatoires du même palier
   let attempts = 0;
   while (nums.size < 4 && attempts < 50) {
     attempts++;
-    // Parfois proches (±1 à ±5), parfois aléatoires
     const nearby = Math.random() < 0.5;
     const n = nearby
       ? correct + randInt(1, 5) * (Math.random() < 0.5 ? 1 : -1)
       : randInt(1, max);
     if (n >= 1 && n <= max && n !== correct) nums.add(n);
   }
-  // Compléter si besoin avec des aléatoires
   while (nums.size < 4) {
     const n = randInt(1, max);
     if (n !== correct) nums.add(n);
   }
-
   const choices = shuffle([...nums].map(n => ({ display: toFrench(n), isCorrect: n === correct })));
   return {
     instruction: 'Quel est le nom de ce nombre ?',
@@ -474,7 +512,6 @@ function makeNombresQuestion(max, correct) {
 }
 
 function makeTableDistractors(correct) {
-  // Résultats proches et d'autres tables pour créer des confusions plausibles
   const pool = new Set();
   for (let d = 1; d <= 6; d++) {
     if (correct - d > 0) pool.add(correct - d);
@@ -483,7 +520,6 @@ function makeTableDistractors(correct) {
   for (let i = 2; i <= 10; i++)
     for (let j = 1; j <= 10; j++)
       if (i * j !== correct) pool.add(i * j);
-
   return shuffle([...pool].filter(v => v !== correct)).slice(0, 3);
 }
 
@@ -516,7 +552,6 @@ function makeTableQuestion(tableNum, mode, b) {
       correctAnswer: correct.toString()
     };
   }
-  // mode C
   return {
     instruction: 'Écris la réponse en français',
     question: `${a} × ${b} = ?`,
@@ -541,7 +576,6 @@ function startNombresQuiz(max) {
 }
 
 function startTablesQuiz(tableNum, mode) {
-  // Tirage sans remise sur les multiplicateurs 1-10
   const multipliers = shuffle(Array.from({ length: 10 }, (_, i) => i + 1)).slice(0, NB_QUESTIONS);
   const questions = multipliers.map(b => makeTableQuestion(tableNum, mode, b));
   lastQuizConfig = { type: 'tables', level: `${tableNum}_${mode}`, tableNum, mode };
@@ -577,13 +611,12 @@ function renderQuestion() {
   document.getElementById('q-instruction').textContent = q.instruction;
 
   const qEl = document.getElementById('q-question');
-  qEl.textContent  = q.question;
-  qEl.className    = `${q.qSize} font-bold text-blue-700 leading-tight`;
+  qEl.textContent = q.question;
+  qEl.className   = `${q.qSize} font-bold text-blue-700 leading-tight`;
 
   document.getElementById('q-feedback').classList.add('hidden');
   document.getElementById('q-next').classList.add('hidden');
 
-  // Animate question card
   const card = document.getElementById('question-card');
   card.classList.remove('fade-in');
   void card.offsetWidth;
@@ -614,14 +647,12 @@ function handleQCM(btn, isCorrect, display) {
     b.disabled = true;
     b.classList.remove('hover:border-blue-400', 'hover:bg-blue-50');
   });
-
   if (isCorrect) {
     btn.classList.add('correct');
     quiz.score++;
     showFeedback(true, null);
   } else {
     btn.classList.add('incorrect');
-    // Montrer la bonne réponse en vert
     document.querySelectorAll('.choice-btn').forEach(b => {
       if (b.textContent.trim() === quiz.questions[quiz.current].correctAnswer) {
         b.classList.add('correct');
@@ -657,14 +688,14 @@ function showFeedback(correct, correctAnswer) {
   const detail = document.getElementById('q-feedback-detail');
 
   if (correct) {
-    fb.className  = 'mt-4 p-4 rounded-xl text-center bg-green-50 border-2 border-green-200';
-    text.className = 'font-bold text-lg text-green-700';
-    text.textContent  = '✓ Bravo ! C\'est correct !';
+    fb.className       = 'mt-4 p-4 rounded-xl text-center bg-green-50 border-2 border-green-200';
+    text.className     = 'font-bold text-lg text-green-700';
+    text.textContent   = '✓ Bravo ! C\'est correct !';
     detail.textContent = '';
   } else {
-    fb.className  = 'mt-4 p-4 rounded-xl text-center bg-red-50 border-2 border-red-200';
-    text.className = 'font-bold text-lg text-red-600';
-    text.textContent  = '✗ Pas tout à fait…';
+    fb.className     = 'mt-4 p-4 rounded-xl text-center bg-red-50 border-2 border-red-200';
+    text.className   = 'font-bold text-lg text-red-600';
+    text.textContent = '✗ Pas tout à fait…';
     detail.textContent = `La bonne réponse : ${correctAnswer}`;
     detail.className   = 'text-sm mt-1 text-red-500 font-semibold';
   }
@@ -683,21 +714,22 @@ function nextQuestion() {
   }
 }
 
-async function finishQuiz() {
+function finishQuiz() {
   const { score, questions, type, level } = quiz;
   const total = questions.length;
   const pct   = score / total;
 
-  // Sauvegarde en base
-  try {
-    await fetch(`${API}/sessions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ student_name: user.name, class_id: user.classId, exercise_type: type, level, score, total })
-    });
-  } catch {}
+  // ── Sauvegarde locale ──────────────────────────────────────────────────
+  saveSession({
+    student_name:  user.name,
+    class_id:      user.classId,
+    exercise_type: type,
+    level,
+    score,
+    total
+  });
 
-  // Affichage résultat
+  // ── Affichage résultat ─────────────────────────────────────────────────
   document.getElementById('result-score').textContent = score;
   document.getElementById('result-total').textContent = total;
 
@@ -735,6 +767,20 @@ document.getElementById('input-name').addEventListener('keydown', e => {
 document.getElementById('input-code').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DÉMARRAGE — reconnexion automatique si session sauvegardée
+// ═══════════════════════════════════════════════════════════════════════════
+
+(function init() {
+  const saved = loadUser();
+  if (saved && CLASS_CODES[saved.classId]) {
+    user = saved;
+    showMenu();
+  } else {
+    show('login');
+  }
+})();
 </script>
 </body>
 </html>
