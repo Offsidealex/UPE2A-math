@@ -34,6 +34,11 @@
         <input id="input-name" type="text" placeholder="Ex : Ana" autocomplete="off"
           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-blue-400 transition">
       </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">Code de classe</label>
+        <input id="input-code" type="text" placeholder="Ex : UPE2A" maxlength="10" autocomplete="off"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base uppercase tracking-widest focus:outline-none focus:border-blue-400 transition">
+      </div>
       <p id="login-error" class="text-red-500 text-sm hidden text-center"></p>
       <button onclick="doLogin()"
         class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold hover:bg-blue-700 active:bg-blue-800 transition shadow-md">
@@ -309,9 +314,12 @@ function doLogin() {
   const name = document.getElementById('input-name').value.trim();
   const err  = document.getElementById('login-error');
 
-  if (name.length < 2) { showErr(err, 'Écris ton prénom.'); return; }
+  const code = document.getElementById('input-code').value.trim().toUpperCase();
 
-  user = { name, classId: 'local', className: 'UPE2A' };
+  if (name.length < 2) { showErr(err, 'Écris ton prénom.'); return; }
+  if (code !== 'UPE2A') { showErr(err, 'Code de classe incorrect.'); return; }
+
+  user = { name, classId: 'UPE2A', className: 'UPE2A' };
   err.classList.add('hidden');
   saveUser(user);
   showMenu();
@@ -747,7 +755,13 @@ function finishQuiz() {
 // EVENTS CLAVIER (LOGIN)
 // ═══════════════════════════════════════════════════════════════════════════
 
+document.getElementById('input-code').addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
 document.getElementById('input-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('input-code').focus();
+});
+document.getElementById('input-code').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
 
