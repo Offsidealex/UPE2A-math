@@ -93,6 +93,38 @@
       </div>
     </div>
 
+    <!-- Carte Additions -->
+    <div onclick="showAdditionsLevels()"
+      class="bg-white rounded-2xl shadow-md p-6 mb-4 cursor-pointer card-hover border-2 border-transparent hover:border-orange-200">
+      <div class="flex items-center gap-4">
+        <div class="text-5xl">➕</div>
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-gray-800">Additions</h2>
+          <p class="text-gray-500 text-sm">Additions de 0 à 100</p>
+          <div class="flex gap-2 mt-2">
+            <span class="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded-full font-medium">4 niveaux</span>
+          </div>
+        </div>
+        <span class="text-gray-300 text-2xl">›</span>
+      </div>
+    </div>
+
+    <!-- Carte Soustractions -->
+    <div onclick="showSoustractionsLevels()"
+      class="bg-white rounded-2xl shadow-md p-6 mb-4 cursor-pointer card-hover border-2 border-transparent hover:border-red-200">
+      <div class="flex items-center gap-4">
+        <div class="text-5xl">➖</div>
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-gray-800">Soustractions</h2>
+          <p class="text-gray-500 text-sm">Soustractions de 0 à 100</p>
+          <div class="flex gap-2 mt-2">
+            <span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-medium">4 niveaux</span>
+          </div>
+        </div>
+        <span class="text-gray-300 text-2xl">›</span>
+      </div>
+    </div>
+
     <!-- Historique -->
     <div id="history-section" class="mt-8 hidden">
       <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Tes dernières sessions</h3>
@@ -373,6 +405,8 @@ function loadHistory() {
 
 function labelSession(type, level) {
   if (type === 'nombres') return `Nombres 1–${level}`;
+  if (type === 'additions') return `Additions niveau ${level}`;
+  if (type === 'soustractions') return `Soustractions niveau ${level}`;
   const [table, mode] = level.split('_');
   const t = table === '0' ? 'Toutes les tables' : `Table de ${table}`;
   const m = mode === 'A' ? 'QCM' : mode === 'B' ? 'saisie chiffres' : 'saisie lettres';
@@ -470,6 +504,58 @@ function selectTable(n) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SÉLECTION DU NIVEAU — ADDITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showAdditionsLevels() {
+  document.getElementById('levels-title').textContent = '➕ Additions';
+  const niveaux = [
+    { id: 1, label: 'Niveau 1 — résultat ≤ 10',  sub: 'QCM, nombres jusqu\'à 10',  color: 'orange' },
+    { id: 2, label: 'Niveau 2 — résultat ≤ 20',  sub: 'QCM, nombres jusqu\'à 20',  color: 'orange' },
+    { id: 3, label: 'Niveau 3 — résultat ≤ 50',  sub: 'Saisie chiffres',            color: 'orange' },
+    { id: 4, label: 'Niveau 4 — résultat ≤ 100', sub: 'Saisie chiffres',            color: 'orange' },
+  ];
+  document.getElementById('levels-list').innerHTML = niveaux.map(n => `
+    <button onclick="startAdditionsQuiz(${n.id})"
+      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-orange-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="font-bold text-gray-800 text-lg">${n.label}</p>
+          <p class="text-sm text-gray-400 mt-0.5">${n.sub}</p>
+        </div>
+        <span class="text-orange-400 text-2xl">›</span>
+      </div>
+    </button>`).join('');
+  show('levels');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SÉLECTION DU NIVEAU — SOUSTRACTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showSoustractionsLevels() {
+  document.getElementById('levels-title').textContent = '➖ Soustractions';
+  const niveaux = [
+    { id: 1, label: 'Niveau 1 — résultat ≤ 10',  sub: 'QCM, nombres jusqu\'à 10' },
+    { id: 2, label: 'Niveau 2 — résultat ≤ 20',  sub: 'QCM, nombres jusqu\'à 20' },
+    { id: 3, label: 'Niveau 3 — résultat ≤ 50',  sub: 'Saisie chiffres'           },
+    { id: 4, label: 'Niveau 4 — résultat ≤ 100', sub: 'Saisie chiffres'           },
+  ];
+  document.getElementById('levels-list').innerHTML = niveaux.map(n => `
+    <button onclick="startSoustractionsQuiz(${n.id})"
+      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-red-300">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="font-bold text-gray-800 text-lg">${n.label}</p>
+          <p class="text-sm text-gray-400 mt-0.5">${n.sub}</p>
+        </div>
+        <span class="text-red-400 text-2xl">›</span>
+      </div>
+    </button>`).join('');
+  show('levels');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // GÉNÉRATION DES QUESTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -558,6 +644,48 @@ function makeTableQuestion(tableNum, mode, b) {
   };
 }
 
+const ADDITION_MAX    = [null, 10, 20, 50, 100];
+const SOUSTRACTION_MAX = [null, 10, 20, 50, 100];
+
+function makeAdditionDistractors(correct) {
+  const pool = new Set();
+  for (let d = 1; d <= 5; d++) {
+    if (correct - d >= 0) pool.add(correct - d);
+    pool.add(correct + d);
+  }
+  return shuffle([...pool].filter(v => v !== correct)).slice(0, 3);
+}
+
+function makeAdditionQuestion(level) {
+  const max = ADDITION_MAX[level];
+  let a, b;
+  do { a = randInt(0, max); b = randInt(0, max); } while (a + b > max);
+  const correct = a + b;
+  if (level <= 2) {
+    const choices = shuffle([
+      { display: correct.toString(), isCorrect: true },
+      ...makeAdditionDistractors(correct).map(d => ({ display: d.toString(), isCorrect: false }))
+    ]);
+    return { instruction: 'Quelle est la réponse ?', question: `${a} + ${b} = ?`, qSize: 'text-5xl', type: 'qcm', choices, correctAnswer: correct.toString() };
+  }
+  return { instruction: 'Écris la réponse en chiffres', question: `${a} + ${b} = ?`, qSize: 'text-5xl', type: 'input_num', correctAnswer: correct.toString() };
+}
+
+function makeSoustractionQuestion(level) {
+  const max = SOUSTRACTION_MAX[level];
+  const a = randInt(0, max);
+  const b = randInt(0, a);
+  const correct = a - b;
+  if (level <= 2) {
+    const choices = shuffle([
+      { display: correct.toString(), isCorrect: true },
+      ...makeAdditionDistractors(correct).map(d => ({ display: d.toString(), isCorrect: false }))
+    ]);
+    return { instruction: 'Quelle est la réponse ?', question: `${a} − ${b} = ?`, qSize: 'text-5xl', type: 'qcm', choices, correctAnswer: correct.toString() };
+  }
+  return { instruction: 'Écris la réponse en chiffres', question: `${a} − ${b} = ?`, qSize: 'text-5xl', type: 'input_num', correctAnswer: correct.toString() };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // LANCEMENT DU QUIZ
 // ═══════════════════════════════════════════════════════════════════════════
@@ -579,9 +707,25 @@ function startTablesQuiz(tableNum, mode) {
   beginQuiz(questions, 'tables', `${tableNum}_${mode}`);
 }
 
+function startAdditionsQuiz(level) {
+  const questions = Array.from({ length: NB_QUESTIONS }, () => makeAdditionQuestion(level));
+  lastQuizConfig = { type: 'additions', level: level.toString() };
+  beginQuiz(questions, 'additions', level.toString());
+}
+
+function startSoustractionsQuiz(level) {
+  const questions = Array.from({ length: NB_QUESTIONS }, () => makeSoustractionQuestion(level));
+  lastQuizConfig = { type: 'soustractions', level: level.toString() };
+  beginQuiz(questions, 'soustractions', level.toString());
+}
+
 function restartQuiz() {
   if (lastQuizConfig.type === 'nombres') {
     startNombresQuiz(parseInt(lastQuizConfig.level));
+  } else if (lastQuizConfig.type === 'additions') {
+    startAdditionsQuiz(parseInt(lastQuizConfig.level));
+  } else if (lastQuizConfig.type === 'soustractions') {
+    startSoustractionsQuiz(parseInt(lastQuizConfig.level));
   } else {
     startTablesQuiz(lastQuizConfig.tableNum, lastQuizConfig.mode);
   }
