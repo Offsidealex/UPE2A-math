@@ -50,7 +50,7 @@
 
 <!-- ── ÉCRAN 2 : Menu principal ────────────────────────────────────────── -->
 <div id="screen-menu" class="hidden min-h-screen p-4">
-  <div class="max-w-lg mx-auto pt-6">
+  <div class="max-w-4xl mx-auto pt-6">
     <div class="flex items-start justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Bonjour, <span id="menu-name"></span> ! 👋</h1>
@@ -59,43 +59,48 @@
       <button onclick="logout()" class="text-xs text-gray-400 hover:text-gray-600 mt-1 underline">Changer</button>
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
-      <div onclick="showNombresLevels()" class="bg-blue-50 border-2 border-transparent hover:border-blue-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
-        <div class="text-4xl mb-2">🔢</div>
-        <p class="font-bold text-gray-800 text-sm">Nombres</p>
-        <p class="text-xs text-gray-400 mt-0.5">1 à 1000</p>
-        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full mt-2">4 paliers</span>
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- Tuiles exercices -->
+      <div class="flex-1">
+        <div class="grid grid-cols-2 gap-3">
+          <div onclick="showNombresLevels()" class="bg-blue-50 border-2 border-transparent hover:border-blue-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+            <div class="text-4xl mb-2">🔢</div>
+            <p class="font-bold text-gray-800 text-sm">Nombres</p>
+            <p class="text-xs text-gray-400 mt-0.5">1 à 1000</p>
+            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full mt-2">4 paliers</span>
+          </div>
+          <div onclick="showTablesLevels()" class="bg-green-50 border-2 border-transparent hover:border-green-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+            <div class="text-4xl mb-2">✖️</div>
+            <p class="font-bold text-gray-800 text-sm">Tables</p>
+            <p class="text-xs text-gray-400 mt-0.5">De 2 à 10</p>
+            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-2">3 niveaux</span>
+          </div>
+          <div onclick="showAdditionsLevels()" class="bg-orange-50 border-2 border-transparent hover:border-orange-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+            <div class="text-4xl mb-2">➕</div>
+            <p class="font-bold text-gray-800 text-sm">Additions</p>
+            <p class="text-xs text-gray-400 mt-0.5">0 à 100</p>
+            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
+          </div>
+          <div onclick="showSoustractionsLevels()" class="bg-red-50 border-2 border-transparent hover:border-red-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+            <div class="text-4xl mb-2">➖</div>
+            <p class="font-bold text-gray-800 text-sm">Soustractions</p>
+            <p class="text-xs text-gray-400 mt-0.5">0 à 100</p>
+            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
+          </div>
+          <div onclick="showCarresMagiquesLevels()" class="col-span-2 bg-purple-50 border-2 border-transparent hover:border-purple-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
+            <div class="text-4xl mb-2">🔲</div>
+            <p class="font-bold text-gray-800 text-sm">Carrés magiques</p>
+            <p class="text-xs text-gray-400 mt-0.5">Complète la grille 3×3</p>
+            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
+          </div>
+        </div>
       </div>
-      <div onclick="showTablesLevels()" class="bg-green-50 border-2 border-transparent hover:border-green-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
-        <div class="text-4xl mb-2">✖️</div>
-        <p class="font-bold text-gray-800 text-sm">Tables</p>
-        <p class="text-xs text-gray-400 mt-0.5">De 2 à 10</p>
-        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-2">3 niveaux</span>
-      </div>
-      <div onclick="showAdditionsLevels()" class="bg-orange-50 border-2 border-transparent hover:border-orange-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
-        <div class="text-4xl mb-2">➕</div>
-        <p class="font-bold text-gray-800 text-sm">Additions</p>
-        <p class="text-xs text-gray-400 mt-0.5">0 à 100</p>
-        <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
-      </div>
-      <div onclick="showSoustractionsLevels()" class="bg-red-50 border-2 border-transparent hover:border-red-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
-        <div class="text-4xl mb-2">➖</div>
-        <p class="font-bold text-gray-800 text-sm">Soustractions</p>
-        <p class="text-xs text-gray-400 mt-0.5">0 à 100</p>
-        <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
-      </div>
-      <div onclick="showCarresMagiquesLevels()" class="col-span-2 bg-purple-50 border-2 border-transparent hover:border-purple-300 rounded-2xl p-4 cursor-pointer card-hover flex flex-col items-center text-center">
-        <div class="text-4xl mb-2">🔲</div>
-        <p class="font-bold text-gray-800 text-sm">Carrés magiques</p>
-        <p class="text-xs text-gray-400 mt-0.5">Complète la grille 3×3</p>
-        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
-      </div>
-    </div>
 
-    <!-- Historique -->
-    <div id="history-section" class="mt-6 hidden">
-      <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Tes dernières sessions</h3>
-      <div id="history-list" class="space-y-2"></div>
+      <!-- Panneau scores -->
+      <div class="md:w-64 shrink-0">
+        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Mes scores</h3>
+        <div id="score-summary" class="bg-white rounded-2xl shadow p-4 text-sm space-y-4"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -369,6 +374,86 @@ function showMenu() {
   document.getElementById('menu-name').textContent = user.name.split(' ')[0];
   show('menu');
   loadHistory();
+  buildScoreSummary();
+}
+
+function buildScoreSummary() {
+  const sessions = getStudentSessions(user.name, user.classId);
+  const best = {};
+  for (const s of sessions) {
+    const key = `${s.exercise_type}|${s.level}`;
+    const pct = s.score / s.total;
+    if (!best[key] || pct > best[key].pct) {
+      best[key] = { score: s.score, total: s.total, pct };
+    }
+  }
+
+  function cell(type, level) {
+    const b = best[`${type}|${level}`];
+    if (!b) return '<span class="text-gray-300 text-xs">—</span>';
+    const color = b.pct >= 0.8 ? 'text-green-600' : b.pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
+    return `<span class="${color} font-bold">${b.score}/${b.total}</span><span class="text-xs ml-1">${stars(b.score,b.total)}</span>`;
+  }
+
+  function magicCell(level) {
+    return best[`magic|${level}`]
+      ? '<span class="text-green-600 font-bold">✅</span>'
+      : '<span class="text-gray-300 text-xs">—</span>';
+  }
+
+  function bestTableMode(mode) {
+    let topPct = -1, topB = null;
+    for (const [k, b] of Object.entries(best)) {
+      if (k.endsWith(`_${mode}`)) { if (b.pct > topPct) { topPct = b.pct; topB = b; } }
+    }
+    if (!topB) return '<span class="text-gray-300 text-xs">—</span>';
+    const color = topB.pct >= 0.8 ? 'text-green-600' : topB.pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
+    return `<span class="${color} font-bold">${topB.score}/${topB.total}</span><span class="text-xs ml-1">${stars(topB.score,topB.total)}</span>`;
+  }
+
+  function section(title, rows) {
+    return `<div>
+      <p class="font-semibold text-gray-600 mb-1">${title}</p>
+      <table class="w-full text-xs">
+        ${rows.map(([label, val]) => `<tr>
+          <td class="text-gray-500 py-0.5 pr-2">${label}</td>
+          <td class="text-right">${val}</td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+  }
+
+  document.getElementById('score-summary').innerHTML = [
+    section('🔢 Nombres', [
+      ['Palier 1 (1–10)',   cell('nombres','10')],
+      ['Palier 2 (1–20)',   cell('nombres','20')],
+      ['Palier 3 (1–100)',  cell('nombres','100')],
+      ['Palier 4 (1–1000)', cell('nombres','1000')],
+    ]),
+    section('✖️ Tables', [
+      ['Mode A — QCM',     bestTableMode('A')],
+      ['Mode B — chiffres',bestTableMode('B')],
+      ['Mode C — lettres', bestTableMode('C')],
+    ]),
+    section('➕ Additions', [
+      ['Niveau 1 (≤10)',  cell('additions','1')],
+      ['Niveau 2 (≤20)',  cell('additions','2')],
+      ['Niveau 3 (≤50)',  cell('additions','3')],
+      ['Niveau 4 (≤100)', cell('additions','4')],
+    ]),
+    section('➖ Soustractions', [
+      ['Niveau 1 (≤10)',  cell('soustractions','1')],
+      ['Niveau 2 (≤20)',  cell('soustractions','2')],
+      ['Niveau 3 (≤50)',  cell('soustractions','3')],
+      ['Niveau 4 (≤100)', cell('soustractions','4')],
+    ]),
+    section('🔲 Carrés magiques', [
+      ['Niveau 1 — Facile',    magicCell('1')],
+      ['Niveau 2 — Moyen',     magicCell('2')],
+      ['Niveau 3 — Difficile', magicCell('3')],
+      ['Niveau 4 — Expert',    magicCell('4')],
+    ]),
+  ].join('<hr class="border-gray-100 my-1">');
 }
 
 function loadHistory() {
