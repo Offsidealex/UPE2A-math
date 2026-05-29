@@ -16,6 +16,24 @@
     .card-hover { transition: all .2s; }
     .card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
     .tbtn-active { background: #2563eb !important; color: white !important; }
+    /* Horloge */
+    .clock-svg { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.12)); }
+    /* Pièces de monnaie */
+    .coin { transition: all .15s; cursor: pointer; }
+    .coin:hover { transform: scale(1.08); }
+    .coin.selected { outline: 3px solid #2563eb; border-radius: 50%; }
+    /* Formes géo */
+    .geo-shape { transition: all .2s; cursor: pointer; }
+    .geo-shape:hover { filter: brightness(1.08); }
+    .geo-shape.selected { filter: brightness(0.9) drop-shadow(0 0 6px rgba(37,99,235,0.5)); }
+    /* Mesures */
+    .mesure-option { transition: all .15s; }
+    .mesure-option:hover { transform: translateY(-1px); }
+    /* TTS button */
+    .tts-btn { background: none; border: none; cursor: pointer; padding: 4px; border-radius: 50%; transition: background .15s; }
+    .tts-btn:hover { background: rgba(0,0,0,.06); }
+    /* Pictogramme consigne */
+    .picto-consigne { font-size: 2rem; display: block; margin-bottom: 4px; }
   </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
@@ -56,42 +74,70 @@
         <h1 class="text-2xl font-bold text-gray-800">Bonjour, <span id="menu-name"></span> ! 👋</h1>
         <p class="text-gray-400 text-sm mt-0.5">Choisis un exercice</p>
       </div>
-      <button onclick="logout()" class="text-xs text-gray-400 hover:text-gray-600 mt-1 underline">Changer</button>
+      <div class="flex gap-2 mt-1">
+        <button onclick="toggleTTS()" id="tts-toggle-btn" title="Activer/désactiver la lecture vocale"
+          class="text-xs px-3 py-1.5 rounded-full border-2 border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">🔊</button>
+        <button onclick="logout()" class="text-xs text-gray-400 hover:text-gray-600 mt-1 underline">Changer</button>
+      </div>
     </div>
 
     <div class="flex flex-col md:flex-row gap-6">
       <!-- Tuiles exercices -->
       <div class="flex-1">
-        <div class="grid grid-cols-2 gap-3 h-full">
-          <div onclick="showNombresLevels()" class="bg-blue-50 border-2 border-transparent hover:border-blue-300 rounded-2xl p-6 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
-            <div class="text-5xl mb-3">🔢</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div onclick="showNombresLevels()" class="bg-blue-50 border-2 border-transparent hover:border-blue-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">🔢</div>
             <p class="font-bold text-gray-800">Nombres</p>
             <p class="text-xs text-gray-400 mt-1">1 à 1000</p>
-            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full mt-3">4 paliers</span>
+            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full mt-2">4 paliers</span>
           </div>
-          <div onclick="showTablesLevels()" class="bg-green-50 border-2 border-transparent hover:border-green-300 rounded-2xl p-6 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
-            <div class="text-5xl mb-3">✖️</div>
+          <div onclick="showTablesLevels()" class="bg-green-50 border-2 border-transparent hover:border-green-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">✖️</div>
             <p class="font-bold text-gray-800">Tables</p>
             <p class="text-xs text-gray-400 mt-1">De 2 à 10</p>
-            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-3">3 niveaux</span>
+            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-2">3 niveaux</span>
           </div>
-          <div onclick="showAdditionsLevels()" class="bg-orange-50 border-2 border-transparent hover:border-orange-300 rounded-2xl p-6 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
-            <div class="text-5xl mb-3">➕</div>
+          <div onclick="showAdditionsLevels()" class="bg-orange-50 border-2 border-transparent hover:border-orange-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">➕</div>
             <p class="font-bold text-gray-800">Additions</p>
             <p class="text-xs text-gray-400 mt-1">0 à 100</p>
-            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full mt-3">4 niveaux</span>
+            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
           </div>
-          <div onclick="showSoustractionsLevels()" class="bg-red-50 border-2 border-transparent hover:border-red-300 rounded-2xl p-6 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
-            <div class="text-5xl mb-3">➖</div>
+          <div onclick="showSoustractionsLevels()" class="bg-red-50 border-2 border-transparent hover:border-red-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">➖</div>
             <p class="font-bold text-gray-800">Soustractions</p>
             <p class="text-xs text-gray-400 mt-1">0 à 100</p>
-            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full mt-3">4 niveaux</span>
+            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
           </div>
-          <div onclick="showCarresMagiquesLevels()" class="col-span-2 bg-purple-50 border-2 border-transparent hover:border-purple-300 rounded-2xl p-6 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
-            <div class="text-5xl mb-3">🔲</div>
+          <div onclick="showHeureLevels()" class="bg-yellow-50 border-2 border-transparent hover:border-yellow-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">🕐</div>
+            <p class="font-bold text-gray-800">L'heure</p>
+            <p class="text-xs text-gray-400 mt-1">Analogique & numérique</p>
+            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full mt-2">3 niveaux</span>
+          </div>
+          <div onclick="showMonnaieLevels()" class="bg-emerald-50 border-2 border-transparent hover:border-emerald-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">💶</div>
+            <p class="font-bold text-gray-800">Monnaie</p>
+            <p class="text-xs text-gray-400 mt-1">Euros et centimes</p>
+            <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full mt-2">3 niveaux</span>
+          </div>
+          <div onclick="showGeoLevels()" class="bg-pink-50 border-2 border-transparent hover:border-pink-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">📐</div>
+            <p class="font-bold text-gray-800">Géométrie</p>
+            <p class="text-xs text-gray-400 mt-1">Formes & propriétés</p>
+            <span class="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full mt-2">3 niveaux</span>
+          </div>
+          <div onclick="showMesuresLevels()" class="col-span-2 bg-cyan-50 border-2 border-transparent hover:border-cyan-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">📏</div>
+            <p class="font-bold text-gray-800">Mesures & Unités</p>
+            <p class="text-xs text-gray-400 mt-1">Longueurs, masses, capacités, températures</p>
+            <span class="text-xs bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
+          </div>
+          <div onclick="showCarresMagiquesLevels()" class="col-span-2 bg-purple-50 border-2 border-transparent hover:border-purple-300 rounded-2xl p-5 cursor-pointer card-hover flex flex-col items-center justify-center text-center">
+            <div class="text-4xl mb-2">🔲</div>
             <p class="font-bold text-gray-800">Carrés magiques</p>
             <p class="text-xs text-gray-400 mt-1">Complète la grille 3×3</p>
-            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mt-3">4 niveaux</span>
+            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full mt-2">4 niveaux</span>
           </div>
         </div>
       </div>
@@ -119,30 +165,26 @@
 <!-- ── ÉCRAN 4 : Quiz ─────────────────────────────────────────────────── -->
 <div id="screen-quiz" class="hidden min-h-screen p-4">
   <div class="max-w-lg mx-auto pt-4">
-
-    <!-- En-tête -->
     <div class="flex items-center justify-between mb-3">
       <button onclick="if(confirm('Quitter l\'exercice ?')) showMenu()"
         class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition text-lg">✕</button>
       <p class="text-sm text-gray-500 font-medium">Question <span id="q-current">1</span> / <span id="q-total">10</span></p>
       <p class="text-sm font-bold text-green-600">✓ <span id="q-score">0</span></p>
     </div>
-
-    <!-- Barre de progression -->
     <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
       <div id="q-progress" class="bg-blue-500 h-2.5 rounded-full transition-all duration-500" style="width:0%"></div>
     </div>
-
-    <!-- Carte question -->
     <div id="question-card" class="bg-white rounded-2xl shadow-lg p-8 mb-5 text-center fade-in">
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <span id="q-picto" class="picto-consigne"></span>
+        <button id="q-tts-btn" onclick="speakQuestion()" class="tts-btn text-gray-400 hover:text-blue-500" title="Lire à voix haute">🔊</button>
+      </div>
       <p class="text-sm text-gray-400 mb-3 font-medium" id="q-instruction"></p>
       <div id="q-question" class="font-bold text-blue-700 leading-tight"></div>
+      <!-- Zone visuelle spéciale (horloge, formes, pièces…) -->
+      <div id="q-visual" class="mt-4 flex justify-center"></div>
     </div>
-
-    <!-- Choix QCM -->
     <div id="q-choices" class="grid grid-cols-2 gap-3"></div>
-
-    <!-- Saisie libre -->
     <div id="q-input-section" class="hidden space-y-3">
       <input id="q-input" type="text" placeholder="Ta réponse…" autocomplete="off"
         class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-xl text-center focus:outline-none focus:border-blue-400 transition">
@@ -151,14 +193,23 @@
         Valider ✓
       </button>
     </div>
-
-    <!-- Feedback -->
+    <!-- Zone monnaie : clic sur les pièces/billets -->
+    <div id="q-monnaie-section" class="hidden space-y-3">
+      <p class="text-center text-sm text-gray-500">Clique sur les pièces/billets pour atteindre le montant exact</p>
+      <div id="monnaie-coins" class="flex flex-wrap justify-center gap-3"></div>
+      <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+        <span class="text-sm text-gray-500">Total sélectionné :</span>
+        <span id="monnaie-total" class="text-2xl font-bold text-blue-700">0,00 €</span>
+      </div>
+      <button id="q-monnaie-btn" onclick="submitMonnaie()"
+        class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold hover:bg-blue-700 transition shadow">
+        Valider ✓
+      </button>
+    </div>
     <div id="q-feedback" class="hidden mt-4 p-4 rounded-xl text-center">
       <p id="q-feedback-text" class="font-bold text-lg"></p>
       <p id="q-feedback-detail" class="text-sm mt-1"></p>
     </div>
-
-    <!-- Bouton Suivant -->
     <button id="q-next" onclick="nextQuestion()"
       class="hidden mt-4 w-full py-3 bg-gray-800 text-white rounded-xl text-lg font-bold hover:bg-gray-900 transition shadow">
       Suivant →
@@ -196,138 +247,159 @@
     <button onclick="showMenu()" class="flex items-center gap-1 text-gray-400 hover:text-gray-700 mb-4 transition text-sm">← Menu</button>
     <h2 class="text-xl font-bold text-gray-800 mb-1">🔲 Carré magique</h2>
     <p id="magic-desc" class="text-sm text-gray-500 mb-6"></p>
-
     <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
       <p class="text-center text-xs text-gray-400 mb-4">La somme de chaque ligne, colonne et diagonale est la même.</p>
       <div id="magic-grid" class="grid grid-cols-3 gap-2 max-w-xs mx-auto"></div>
     </div>
-
     <p id="magic-feedback" class="text-center font-bold text-lg mb-4 hidden"></p>
-
     <button onclick="checkCarreMagique()" id="magic-check-btn"
       class="w-full py-3 bg-purple-600 text-white rounded-xl text-lg font-bold hover:bg-purple-700 transition shadow mb-3">
       Vérifier ✓
     </button>
-    <button onclick="startCarreMagique(currentMagicLevel)" id="magic-retry-btn"
+    <button onclick="startCarreMagique(currentMagicLevel)"
       class="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition">
       Nouveau carré 🔄
     </button>
   </div>
 </div>
 
+<!-- ── ÉCRAN : L'heure ────────────────────────────────────────────────── -->
+<div id="screen-heure" class="hidden min-h-screen p-4">
+  <div class="max-w-lg mx-auto pt-6">
+    <button onclick="showMenu()" class="flex items-center gap-1 text-gray-400 hover:text-gray-700 mb-4 transition text-sm">← Menu</button>
+    <h2 class="text-xl font-bold text-gray-800 mb-1">🕐 L'heure</h2>
+    <p id="heure-desc" class="text-sm text-gray-500 mb-4"></p>
+    <div id="heure-content"></div>
+  </div>
+</div>
+
+<!-- ── ÉCRAN : Géométrie ──────────────────────────────────────────────── -->
+<div id="screen-geo" class="hidden min-h-screen p-4">
+  <div class="max-w-lg mx-auto pt-6">
+    <button onclick="showMenu()" class="flex items-center gap-1 text-gray-400 hover:text-gray-700 mb-4 transition text-sm">← Menu</button>
+    <h2 class="text-xl font-bold text-gray-800 mb-1">📐 Géométrie</h2>
+    <p id="geo-desc" class="text-sm text-gray-500 mb-4"></p>
+    <div id="geo-content"></div>
+  </div>
+</div>
+
+<!-- ── ÉCRAN : Mesures ────────────────────────────────────────────────── -->
+<div id="screen-mesures" class="hidden min-h-screen p-4">
+  <div class="max-w-lg mx-auto pt-6">
+    <button onclick="showMenu()" class="flex items-center gap-1 text-gray-400 hover:text-gray-700 mb-4 transition text-sm">← Menu</button>
+    <h2 class="text-xl font-bold text-gray-800 mb-1">📏 Mesures & Unités</h2>
+    <div id="mesures-content"></div>
+  </div>
+</div>
+
 <script>
+// ═══════════════════════════════════════════════════
+// TTS — Text To Speech
+// ═══════════════════════════════════════════════════
+let ttsEnabled = false;
+let currentQuestionText = '';
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ⚙️  CODES DE CLASSE — à modifier selon tes besoins
-//     Format : 'CODE': 'Nom affiché'
-// ═══════════════════════════════════════════════════════════════════════════
-
-const CLASS_CODES = {
-  'UPE2A':    'UPE2A',
-  'DIDEROT':  'Lycée Denis Diderot',
-  'MATHS1':   'Groupe 1',
-  'MATHS2':   'Groupe 2',
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// 💾  STOCKAGE LOCAL (localStorage)
-// ═══════════════════════════════════════════════════════════════════════════
-
-const LS_USER     = 'upe2a_user';
-const LS_SESSIONS = 'upe2a_sessions';  // clé unique pour toutes les sessions
-
-function saveUser(u) {
-  localStorage.setItem(LS_USER, JSON.stringify(u));
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('tts-toggle-btn');
+  btn.style.background = ttsEnabled ? '#dbeafe' : '';
+  btn.style.borderColor = ttsEnabled ? '#93c5fd' : '';
+  btn.style.color = ttsEnabled ? '#1d4ed8' : '';
+  if (ttsEnabled) speak('Lecture vocale activée');
 }
 
-function loadUser() {
-  try { return JSON.parse(localStorage.getItem(LS_USER)); } catch { return null; }
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'fr-FR';
+  utt.rate = 0.9;
+  window.speechSynthesis.speak(utt);
 }
 
-function clearUser() {
-  localStorage.removeItem(LS_USER);
+function speakQuestion() {
+  speak(currentQuestionText);
 }
 
-// Sessions : tableau d'objets { student_name, class_id, exercise_type, level, score, total, completed_at }
-function getSessions() {
-  try { return JSON.parse(localStorage.getItem(LS_SESSIONS)) || []; } catch { return []; }
+function maybeSpeak(text) {
+  currentQuestionText = text;
+  if (ttsEnabled) speak(text);
 }
 
+// ═══════════════════════════════════════════════════
+// CODES
+// ═══════════════════════════════════════════════════
+const CLASS_CODES = { 'UPE2A': 'UPE2A', 'DIDEROT': 'Lycée Denis Diderot', 'MATHS1': 'Groupe 1', 'MATHS2': 'Groupe 2' };
+const LS_USER = 'upe2a_user';
+const LS_SESSIONS = 'upe2a_sessions';
+
+function saveUser(u) { localStorage.setItem(LS_USER, JSON.stringify(u)); }
+function loadUser() { try { return JSON.parse(localStorage.getItem(LS_USER)); } catch { return null; } }
+function clearUser() { localStorage.removeItem(LS_USER); }
+function getSessions() { try { return JSON.parse(localStorage.getItem(LS_SESSIONS)) || []; } catch { return []; } }
 function saveSession(session) {
   const sessions = getSessions();
   sessions.unshift({ ...session, completed_at: new Date().toISOString() });
-  // On garde max 200 sessions au total
   localStorage.setItem(LS_SESSIONS, JSON.stringify(sessions.slice(0, 200)));
 }
-
 function getStudentSessions(name, classId) {
   return getSessions().filter(s => s.student_name === name && s.class_id === classId);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// CONVERTISSEUR NOMBRE → FRANÇAIS
-// ═══════════════════════════════════════════════════════════════════════════
-
-const UNITS = [
-  'zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
-  'dix','onze','douze','treize','quatorze','quinze','seize',
-  'dix-sept','dix-huit','dix-neuf'
-];
-const TENS = ['','','vingt','trente','quarante','cinquante','soixante'];
+// ═══════════════════════════════════════════════════
+// NOMBRES EN FRANÇAIS
+// ═══════════════════════════════════════════════════
+const UNITS = ['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+const TENS  = ['','','vingt','trente','quarante','cinquante','soixante'];
 
 function toFrench(n) {
   if (n === 0) return 'zéro';
   if (n < 20)  return UNITS[n];
-  if (n < 70) {
-    const t = Math.floor(n / 10), u = n % 10;
-    if (u === 0) return TENS[t];
-    if (u === 1) return TENS[t] + ' et un';
-    return TENS[t] + '-' + UNITS[u];
-  }
-  if (n < 80) {
-    const u = n - 60;
-    if (u === 11) return 'soixante et onze';
-    return 'soixante-' + UNITS[u];
-  }
-  if (n < 100) {
-    const u = n - 80;
-    if (u === 0) return 'quatre-vingts';
-    return 'quatre-vingt-' + UNITS[u];
-  }
-  if (n < 200) {
-    const r = n - 100;
-    return r === 0 ? 'cent' : 'cent ' + toFrench(r);
-  }
-  if (n < 1000) {
-    const h = Math.floor(n / 100), r = n % 100;
-    const prefix = UNITS[h] + ' cent';
-    return r === 0 ? prefix + 's' : prefix + ' ' + toFrench(r);
-  }
+  if (n < 70)  { const t=Math.floor(n/10),u=n%10; if(!u) return TENS[t]; if(u===1) return TENS[t]+' et un'; return TENS[t]+'-'+UNITS[u]; }
+  if (n < 80)  { const u=n-60; if(u===11) return 'soixante et onze'; return 'soixante-'+UNITS[u]; }
+  if (n < 100) { const u=n-80; if(!u) return 'quatre-vingts'; return 'quatre-vingt-'+UNITS[u]; }
+  if (n < 200) { const r=n-100; return r===0 ? 'cent' : 'cent '+toFrench(r); }
+  if (n < 1000){ const h=Math.floor(n/100),r=n%100; const p=UNITS[h]+' cent'; return r===0 ? p+'s' : p+' '+toFrench(r); }
   return 'mille';
 }
-
 function normalize(s) {
-  return s.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[-\s]+/g, ' ').trim();
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[-\s]+/g,' ').trim();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // ÉTAT GLOBAL
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════
 let user = null;
 let quiz = null;
 let lastQuizConfig = null;
 let selectedTable = 0;
 
-// ═══════════════════════════════════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── Heure ───
+let currentHeureLevel = 1;
+let heureQuestions = [];
+let heureCurrent = 0;
+let heureScore = 0;
+let heureTotal = 8;
 
+// ─── Géo ───
+let currentGeoLevel = 1;
+let geoQuestions = [];
+let geoCurrent = 0;
+let geoScore = 0;
+
+// ─── Mesures ───
+let currentMesureLevel = 1;
+let mesureQuestions = [];
+let mesureCurrent = 0;
+let mesureScore = 0;
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
 function show(id) {
-  ['login','menu','levels','quiz','result','magic'].forEach(s => {
-    document.getElementById('screen-' + s).classList.toggle('hidden', s !== id);
+  ['login','menu','levels','quiz','result','magic','heure','geo','mesures'].forEach(s => {
+    const el = document.getElementById('screen-'+s);
+    el.classList.toggle('hidden', s !== id);
   });
   if (id === 'result') {
     document.getElementById('screen-result').classList.remove('hidden');
@@ -335,41 +407,26 @@ function show(id) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // CONNEXION
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════
 function doLogin() {
   const name = document.getElementById('input-name').value.trim();
-  const err  = document.getElementById('login-error');
-
   const code = document.getElementById('input-code').value.trim().toUpperCase();
-
-  if (name.length < 2) { showErr(err, 'Écris ton prénom.'); return; }
-  if (code !== 'UPE2A') { showErr(err, 'Code de classe incorrect.'); return; }
-
+  const err  = document.getElementById('login-error');
+  if (name.length < 2) { showErr(err,'Écris ton prénom.'); return; }
+  if (code !== 'UPE2A') { showErr(err,'Code de classe incorrect.'); return; }
   user = { name, classId: 'UPE2A', className: 'UPE2A' };
   err.classList.add('hidden');
   saveUser(user);
   showMenu();
 }
+function showErr(el,msg) { el.textContent=msg; el.classList.remove('hidden'); }
+function logout() { user=null; clearUser(); document.getElementById('input-name').value=''; show('login'); }
 
-function showErr(el, msg) {
-  el.textContent = msg;
-  el.classList.remove('hidden');
-}
-
-function logout() {
-  user = null;
-  clearUser();
-  document.getElementById('input-name').value = '';
-  show('login');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // MENU
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════
 function showMenu() {
   document.getElementById('menu-name').textContent = user.name.split(' ')[0];
   show('menu');
@@ -382,722 +439,675 @@ function buildScoreSummary() {
   for (const s of sessions) {
     const key = `${s.exercise_type}|${s.level}`;
     const pct = s.score / s.total;
-    if (!best[key] || pct > best[key].pct) {
-      best[key] = { score: s.score, total: s.total, pct };
-    }
+    if (!best[key] || pct > best[key].pct) best[key] = { score:s.score, total:s.total, pct };
   }
-
-  function cell(type, level) {
+  function cell(type,level) {
     const b = best[`${type}|${level}`];
     if (!b) return '<span class="text-gray-300 text-xs">—</span>';
-    const color = b.pct >= 0.8 ? 'text-green-600' : b.pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
+    const color = b.pct>=0.8?'text-green-600':b.pct>=0.5?'text-orange-500':'text-red-500';
     return `<span class="${color} font-bold">${b.score}/${b.total}</span><span class="text-xs ml-1">${stars(b.score,b.total)}</span>`;
   }
-
-  function magicCell(level) {
-    return best[`magic|${level}`]
-      ? '<span class="text-green-600 font-bold">✅</span>'
-      : '<span class="text-gray-300 text-xs">—</span>';
+  function section(title, rows) {
+    return `<div><p class="font-semibold text-gray-600 mb-1">${title}</p><table class="w-full text-xs">${rows.map(([l,v])=>`<tr><td class="text-gray-500 py-0.5 pr-2">${l}</td><td class="text-right">${v}</td></tr>`).join('')}</table></div>`;
   }
-
   function bestTableMode(mode) {
-    let topPct = -1, topB = null;
-    for (const [k, b] of Object.entries(best)) {
-      if (k.endsWith(`_${mode}`)) { if (b.pct > topPct) { topPct = b.pct; topB = b; } }
-    }
-    if (!topB) return '<span class="text-gray-300 text-xs">—</span>';
-    const color = topB.pct >= 0.8 ? 'text-green-600' : topB.pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
+    let topPct=-1,topB=null;
+    for(const [k,b] of Object.entries(best)) { if(k.endsWith(`_${mode}`)){if(b.pct>topPct){topPct=b.pct;topB=b;}} }
+    if(!topB) return '<span class="text-gray-300 text-xs">—</span>';
+    const color=topB.pct>=0.8?'text-green-600':topB.pct>=0.5?'text-orange-500':'text-red-500';
     return `<span class="${color} font-bold">${topB.score}/${topB.total}</span><span class="text-xs ml-1">${stars(topB.score,topB.total)}</span>`;
   }
-
-  function section(title, rows) {
-    return `<div>
-      <p class="font-semibold text-gray-600 mb-1">${title}</p>
-      <table class="w-full text-xs">
-        ${rows.map(([label, val]) => `<tr>
-          <td class="text-gray-500 py-0.5 pr-2">${label}</td>
-          <td class="text-right">${val}</td>
-        </tr>`).join('')}
-      </table>
-    </div>`;
-  }
-
   document.getElementById('score-summary').innerHTML = [
-    section('🔢 Nombres', [
-      ['Palier 1 (1–10)',   cell('nombres','10')],
-      ['Palier 2 (1–20)',   cell('nombres','20')],
-      ['Palier 3 (1–100)',  cell('nombres','100')],
-      ['Palier 4 (1–1000)', cell('nombres','1000')],
-    ]),
-    section('✖️ Tables', [
-      ['Mode A — QCM',     bestTableMode('A')],
-      ['Mode B — chiffres',bestTableMode('B')],
-      ['Mode C — lettres', bestTableMode('C')],
-    ]),
-    section('➕ Additions', [
-      ['Niveau 1 (≤10)',  cell('additions','1')],
-      ['Niveau 2 (≤20)',  cell('additions','2')],
-      ['Niveau 3 (≤50)',  cell('additions','3')],
-      ['Niveau 4 (≤100)', cell('additions','4')],
-    ]),
-    section('➖ Soustractions', [
-      ['Niveau 1 (≤10)',  cell('soustractions','1')],
-      ['Niveau 2 (≤20)',  cell('soustractions','2')],
-      ['Niveau 3 (≤50)',  cell('soustractions','3')],
-      ['Niveau 4 (≤100)', cell('soustractions','4')],
-    ]),
-    section('🔲 Carrés magiques', [
-      ['Niveau 1 — Facile',    magicCell('1')],
-      ['Niveau 2 — Moyen',     magicCell('2')],
-      ['Niveau 3 — Difficile', magicCell('3')],
-      ['Niveau 4 — Expert',    magicCell('4')],
-    ]),
+    section('🔢 Nombres',[['Palier 1',cell('nombres','10')],['Palier 2',cell('nombres','20')],['Palier 3',cell('nombres','100')],['Palier 4',cell('nombres','1000')]]),
+    section('✖️ Tables',[['QCM',bestTableMode('A')],['Chiffres',bestTableMode('B')],['Lettres',bestTableMode('C')]]),
+    section('➕➖ Opérations',[['Add. N1',cell('additions','1')],['Add. N4',cell('additions','4')],['Sous. N1',cell('soustractions','1')],['Sous. N4',cell('soustractions','4')]]),
+    section('🕐 Heure',[['Niveau 1',cell('heure','1')],['Niveau 2',cell('heure','2')],['Niveau 3',cell('heure','3')]]),
+    section('💶 Monnaie',[['Niveau 1',cell('monnaie','1')],['Niveau 2',cell('monnaie','2')],['Niveau 3',cell('monnaie','3')]]),
+    section('📐 Géométrie',[['Niveau 1',cell('geo','1')],['Niveau 2',cell('geo','2')],['Niveau 3',cell('geo','3')]]),
+    section('📏 Mesures',[['Niveau 1',cell('mesures','1')],['Niveau 2',cell('mesures','2')],['Niveau 3',cell('mesures','3')]]),
   ].join('<hr class="border-gray-100 my-1">');
 }
+function stars(s,t) { const p=s/t; if(p>=0.9) return '⭐⭐⭐'; if(p>=0.7) return '⭐⭐'; if(p>=0.5) return '⭐'; return ''; }
 
-function loadHistory() {
-  const sessions = getStudentSessions(user.name, user.classId);
-  if (!sessions.length) {
-    document.getElementById('history-section').classList.add('hidden');
-    return;
-  }
-  document.getElementById('history-section').classList.remove('hidden');
-  document.getElementById('history-list').innerHTML = sessions.slice(0, 5).map(s => {
-    const pct = s.score / s.total;
-    const color = pct >= 0.8 ? 'text-green-600' : pct >= 0.5 ? 'text-orange-500' : 'text-red-500';
-    return `
-      <div class="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm">
-        <div>
-          <p class="font-semibold text-gray-700 text-sm">${labelSession(s.exercise_type, s.level)}</p>
-          <p class="text-xs text-gray-400">${new Date(s.completed_at).toLocaleDateString('fr-FR')}</p>
-        </div>
-        <div class="text-right">
-          <p class="font-bold ${color}">${s.score}/${s.total}</p>
-          <p class="text-xs">${stars(s.score, s.total)}</p>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function labelSession(type, level) {
-  if (type === 'nombres') return `Nombres 1–${level}`;
-  if (type === 'additions') return `Additions niveau ${level}`;
-  if (type === 'soustractions') return `Soustractions niveau ${level}`;
-  if (type === 'magic') return `Carré magique niveau ${level}`;
-  const [table, mode] = level.split('_');
-  const t = table === '0' ? 'Toutes les tables' : `Table de ${table}`;
-  const m = mode === 'A' ? 'QCM' : mode === 'B' ? 'saisie chiffres' : 'saisie lettres';
-  return `${t} (${m})`;
-}
-
-function stars(score, total) {
-  const p = score / total;
-  if (p >= 0.9) return '⭐⭐⭐';
-  if (p >= 0.7) return '⭐⭐';
-  if (p >= 0.5) return '⭐';
-  return '';
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SÉLECTION DU NIVEAU — NOMBRES
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════
+// NIVEAUX — NOMBRES / TABLES / ADD / SOUS
+// ═══════════════════════════════════════════════════
 function showNombresLevels() {
-  document.getElementById('levels-title').textContent = '🔢 Les nombres en français';
-  const paliers = [
-    { max: 10,   label: 'Palier 1 — 1 à 10',   sub: '10 nombres de base' },
-    { max: 20,   label: 'Palier 2 — 1 à 20',   sub: '20 nombres' },
-    { max: 100,  label: 'Palier 3 — 1 à 100',  sub: 'Dizaines et unités' },
-    { max: 1000, label: 'Palier 4 — 1 à 1000', sub: 'Centaines et millier' },
-  ];
-  document.getElementById('levels-list').innerHTML = paliers.map(p => `
-    <button onclick="startNombresQuiz(${p.max})"
-      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-blue-300">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="font-bold text-gray-800 text-lg">${p.label}</p>
-          <p class="text-sm text-gray-400 mt-0.5">${p.sub}</p>
-        </div>
-        <span class="text-blue-400 text-2xl">›</span>
-      </div>
-    </button>`).join('');
+  document.getElementById('levels-title').textContent='🔢 Les nombres en français';
+  const paliers=[{max:10,label:'Palier 1 — 1 à 10',sub:'10 nombres de base'},{max:20,label:'Palier 2 — 1 à 20',sub:'20 nombres'},{max:100,label:'Palier 3 — 1 à 100',sub:'Dizaines et unités'},{max:1000,label:'Palier 4 — 1 à 1000',sub:'Centaines et millier'}];
+  document.getElementById('levels-list').innerHTML=paliers.map(p=>`<button onclick="startNombresQuiz(${p.max})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-blue-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${p.label}</p><p class="text-sm text-gray-400 mt-0.5">${p.sub}</p></div><span class="text-blue-400 text-2xl">›</span></div></button>`).join('');
   show('levels');
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SÉLECTION DU NIVEAU — TABLES
-// ═══════════════════════════════════════════════════════════════════════════
-
 function showTablesLevels() {
-  document.getElementById('levels-title').textContent = '✖️ Tables de multiplication';
-  selectedTable = 0;
-
-  const modes = [
-    { id: 'A', label: 'Niveau A — QCM',               sub: 'Choisis la bonne réponse (en chiffres)' },
-    { id: 'B', label: 'Niveau B — Saisie chiffres',   sub: 'Écris la réponse en chiffres' },
-    { id: 'C', label: 'Niveau C — Saisie en lettres', sub: 'Écris la réponse en français' },
-  ];
-
-  document.getElementById('levels-list').innerHTML = `
-    <div class="bg-white rounded-2xl shadow p-5 mb-4">
-      <p class="font-semibold text-gray-600 mb-3 text-sm">Quelle table ?</p>
-      <div class="grid grid-cols-4 gap-2">
-        <button onclick="selectTable(0)" id="tbtn-0"
-          class="tbtn col-span-4 py-2 rounded-xl font-bold text-sm tbtn-active transition">
-          Toutes les tables
-        </button>
-        ${[2,3,4,5,6,7,8,9,10].map(n => `
-          <button onclick="selectTable(${n})" id="tbtn-${n}"
-            class="tbtn py-2 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition">
-            ×${n}
-          </button>`).join('')}
-      </div>
-    </div>
-    <div class="bg-white rounded-2xl shadow p-5">
-      <p class="font-semibold text-gray-600 mb-3 text-sm">Quel niveau ?</p>
-      <div class="space-y-2">
-        ${modes.map(m => `
-          <button onclick="startTablesQuiz(selectedTable, '${m.id}')"
-            class="w-full text-left p-4 rounded-xl bg-gray-50 border-2 border-gray-100 hover:border-green-300 hover:bg-green-50 transition card-hover">
-            <p class="font-bold text-gray-800">${m.label}</p>
-            <p class="text-sm text-gray-400 mt-0.5">${m.sub}</p>
-          </button>`).join('')}
-      </div>
-    </div>`;
-
+  document.getElementById('levels-title').textContent='✖️ Tables de multiplication';
+  selectedTable=0;
+  const modes=[{id:'A',label:'Niveau A — QCM',sub:'Choisis la bonne réponse'},{id:'B',label:'Niveau B — Saisie chiffres',sub:'Écris la réponse en chiffres'},{id:'C',label:'Niveau C — Saisie en lettres',sub:'Écris la réponse en français'}];
+  document.getElementById('levels-list').innerHTML=`<div class="bg-white rounded-2xl shadow p-5 mb-4"><p class="font-semibold text-gray-600 mb-3 text-sm">Quelle table ?</p><div class="grid grid-cols-4 gap-2"><button onclick="selectTable(0)" id="tbtn-0" class="tbtn col-span-4 py-2 rounded-xl font-bold text-sm tbtn-active transition">Toutes les tables</button>${[2,3,4,5,6,7,8,9,10].map(n=>`<button onclick="selectTable(${n})" id="tbtn-${n}" class="tbtn py-2 rounded-xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition">×${n}</button>`).join('')}</div></div><div class="bg-white rounded-2xl shadow p-5"><p class="font-semibold text-gray-600 mb-3 text-sm">Quel niveau ?</p><div class="space-y-2">${modes.map(m=>`<button onclick="startTablesQuiz(selectedTable,'${m.id}')" class="w-full text-left p-4 rounded-xl bg-gray-50 border-2 border-gray-100 hover:border-green-300 hover:bg-green-50 transition card-hover"><p class="font-bold text-gray-800">${m.label}</p><p class="text-sm text-gray-400 mt-0.5">${m.sub}</p></button>`).join('')}</div></div>`;
   show('levels');
 }
-
 function selectTable(n) {
-  selectedTable = n;
-  document.querySelectorAll('.tbtn').forEach(btn => {
-    const t = parseInt(btn.id.replace('tbtn-', ''));
-    btn.classList.toggle('tbtn-active', t === n);
-    btn.classList.toggle('bg-gray-100',   t !== n);
-    btn.classList.toggle('text-gray-700', t !== n);
-    btn.classList.toggle('hover:bg-blue-100',   t !== n);
-    btn.classList.toggle('hover:text-blue-700', t !== n);
+  selectedTable=n;
+  document.querySelectorAll('.tbtn').forEach(btn=>{
+    const t=parseInt(btn.id.replace('tbtn-',''));
+    btn.classList.toggle('tbtn-active',t===n);
+    btn.classList.toggle('bg-gray-100',t!==n);
+    btn.classList.toggle('text-gray-700',t!==n);
   });
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SÉLECTION DU NIVEAU — ADDITIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
 function showAdditionsLevels() {
-  document.getElementById('levels-title').textContent = '➕ Additions';
-  const niveaux = [
-    { id: 1, label: 'Niveau 1 — résultat ≤ 10',  sub: 'QCM, nombres jusqu\'à 10',  color: 'orange' },
-    { id: 2, label: 'Niveau 2 — résultat ≤ 20',  sub: 'QCM, nombres jusqu\'à 20',  color: 'orange' },
-    { id: 3, label: 'Niveau 3 — résultat ≤ 50',  sub: 'Saisie chiffres',            color: 'orange' },
-    { id: 4, label: 'Niveau 4 — résultat ≤ 100', sub: 'Saisie chiffres',            color: 'orange' },
-  ];
-  document.getElementById('levels-list').innerHTML = niveaux.map(n => `
-    <button onclick="startAdditionsQuiz(${n.id})"
-      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-orange-300">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="font-bold text-gray-800 text-lg">${n.label}</p>
-          <p class="text-sm text-gray-400 mt-0.5">${n.sub}</p>
-        </div>
-        <span class="text-orange-400 text-2xl">›</span>
-      </div>
-    </button>`).join('');
+  document.getElementById('levels-title').textContent='➕ Additions';
+  const niveaux=[{id:1,label:'Niveau 1 — résultat ≤ 10',sub:"QCM"},{id:2,label:'Niveau 2 — résultat ≤ 20',sub:"QCM"},{id:3,label:'Niveau 3 — résultat ≤ 50',sub:'Saisie chiffres'},{id:4,label:'Niveau 4 — résultat ≤ 100',sub:'Saisie chiffres'}];
+  document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startAdditionsQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-orange-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-orange-400 text-2xl">›</span></div></button>`).join('');
   show('levels');
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SÉLECTION DU NIVEAU — SOUSTRACTIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
 function showSoustractionsLevels() {
-  document.getElementById('levels-title').textContent = '➖ Soustractions';
-  const niveaux = [
-    { id: 1, label: 'Niveau 1 — résultat ≤ 10',  sub: 'QCM, nombres jusqu\'à 10' },
-    { id: 2, label: 'Niveau 2 — résultat ≤ 20',  sub: 'QCM, nombres jusqu\'à 20' },
-    { id: 3, label: 'Niveau 3 — résultat ≤ 50',  sub: 'Saisie chiffres'           },
-    { id: 4, label: 'Niveau 4 — résultat ≤ 100', sub: 'Saisie chiffres'           },
-  ];
-  document.getElementById('levels-list').innerHTML = niveaux.map(n => `
-    <button onclick="startSoustractionsQuiz(${n.id})"
-      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-red-300">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="font-bold text-gray-800 text-lg">${n.label}</p>
-          <p class="text-sm text-gray-400 mt-0.5">${n.sub}</p>
-        </div>
-        <span class="text-red-400 text-2xl">›</span>
-      </div>
-    </button>`).join('');
+  document.getElementById('levels-title').textContent='➖ Soustractions';
+  const niveaux=[{id:1,label:'Niveau 1 — résultat ≤ 10',sub:"QCM"},{id:2,label:'Niveau 2 — résultat ≤ 20',sub:"QCM"},{id:3,label:'Niveau 3 — résultat ≤ 50',sub:'Saisie chiffres'},{id:4,label:'Niveau 4 — résultat ≤ 100',sub:'Saisie chiffres'}];
+  document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startSoustractionsQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-red-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-red-400 text-2xl">›</span></div></button>`).join('');
   show('levels');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // CARRÉS MAGIQUES
-// ═══════════════════════════════════════════════════════════════════════════
-
-const MAGIC_SQUARES = [
-  [[2,9,4],[7,5,3],[6,1,8]],
-  [[6,7,2],[1,5,9],[8,3,4]],
-  [[8,1,6],[3,5,7],[4,9,2]],
-  [[4,3,8],[9,5,1],[2,7,6]],
-  [[4,9,2],[3,5,7],[8,1,6]],
-  [[6,1,8],[7,5,3],[2,9,4]],
-  [[2,7,6],[9,5,1],[4,3,8]],
-  [[8,3,4],[1,5,9],[6,7,2]],
-];
-
-const MAGIC_HIDDEN = [null, 3, 5, 7, 8];
-let currentMagicLevel = 1;
-let currentMagicSquare = null;
-let magicHiddenCells = [];
+// ═══════════════════════════════════════════════════
+const MAGIC_SQUARES=[[2,9,4],[7,5,3],[6,1,8]].concat([[[6,7,2],[1,5,9],[8,3,4]],[[8,1,6],[3,5,7],[4,9,2]],[[4,3,8],[9,5,1],[2,7,6]]]);
+const MAGIC_SQ_LIST=[[[2,9,4],[7,5,3],[6,1,8]],[[6,7,2],[1,5,9],[8,3,4]],[[8,1,6],[3,5,7],[4,9,2]],[[4,3,8],[9,5,1],[2,7,6]],[[4,9,2],[3,5,7],[8,1,6]],[[6,1,8],[7,5,3],[2,9,4]],[[2,7,6],[9,5,1],[4,3,8]],[[8,3,4],[1,5,9],[6,7,2]]];
+const MAGIC_HIDDEN=[null,3,5,7,8];
+let currentMagicLevel=1, currentMagicSquare=null, magicHiddenCells=[];
 
 function showCarresMagiquesLevels() {
-  document.getElementById('levels-title').textContent = '🔲 Carrés magiques';
-  const niveaux = [
-    { id: 1, label: 'Niveau 1 — Facile',    sub: '3 cases à trouver' },
-    { id: 2, label: 'Niveau 2 — Moyen',     sub: '5 cases à trouver' },
-    { id: 3, label: 'Niveau 3 — Difficile', sub: '7 cases à trouver' },
-    { id: 4, label: 'Niveau 4 — Expert',    sub: '8 cases à trouver' },
+  document.getElementById('levels-title').textContent='🔲 Carrés magiques';
+  const niveaux=[{id:1,label:'Niveau 1 — Facile',sub:'3 cases à trouver'},{id:2,label:'Niveau 2 — Moyen',sub:'5 cases à trouver'},{id:3,label:'Niveau 3 — Difficile',sub:'7 cases à trouver'},{id:4,label:'Niveau 4 — Expert',sub:'8 cases à trouver'}];
+  document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startCarreMagique(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-purple-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-purple-400 text-2xl">›</span></div></button>`).join('');
+  show('levels');
+}
+function startCarreMagique(level) {
+  currentMagicLevel=level;
+  currentMagicSquare=MAGIC_SQ_LIST[randInt(0,MAGIC_SQ_LIST.length-1)].map(r=>[...r]);
+  const nbHidden=MAGIC_HIDDEN[level];
+  const allCells=[];
+  for(let r=0;r<3;r++) for(let c=0;c<3;c++) allCells.push([r,c]);
+  magicHiddenCells=shuffle(allCells).slice(0,nbHidden);
+  const hiddenSet=new Set(magicHiddenCells.map(([r,c])=>`${r}-${c}`));
+  const magicSum=currentMagicSquare[0].reduce((s,v)=>s+v,0);
+  document.getElementById('magic-desc').textContent=`Complète la grille — la somme magique est ${magicSum}.`;
+  document.getElementById('magic-feedback').classList.add('hidden');
+  document.getElementById('magic-check-btn').disabled=false;
+  document.getElementById('magic-check-btn').classList.remove('opacity-50');
+  document.getElementById('magic-grid').innerHTML=currentMagicSquare.flatMap((row,r)=>row.map((val,c)=>{
+    const hidden=hiddenSet.has(`${r}-${c}`);
+    return hidden
+      ? `<input id="mc-${r}-${c}" type="number" min="1" max="100" class="w-full aspect-square text-center text-2xl font-bold border-2 border-purple-300 rounded-xl focus:outline-none focus:border-purple-500 bg-white">`
+      : `<div class="w-full aspect-square flex items-center justify-center text-2xl font-bold bg-gray-100 rounded-xl text-gray-700">${val}</div>`;
+  })).join('');
+  show('magic');
+}
+function checkCarreMagique() {
+  let allCorrect=true;
+  for(const [r,c] of magicHiddenCells){
+    const inp=document.getElementById(`mc-${r}-${c}`);
+    const val=parseInt(inp.value);
+    if(val===currentMagicSquare[r][c]){ inp.classList.add('border-green-400','bg-green-50'); inp.classList.remove('border-purple-300','border-red-400','bg-red-50'); }
+    else { inp.classList.add('border-red-400','bg-red-50'); inp.classList.remove('border-purple-300','border-green-400','bg-green-50'); allCorrect=false; }
+  }
+  const fb=document.getElementById('magic-feedback');
+  fb.classList.remove('hidden','text-green-600','text-red-600');
+  if(allCorrect){ fb.textContent="🎉 Bravo, c'est correct !"; fb.classList.add('text-green-600'); document.getElementById('magic-check-btn').disabled=true; document.getElementById('magic-check-btn').classList.add('opacity-50'); saveSession({student_name:user.name,class_id:user.classId,exercise_type:'magic',level:currentMagicLevel.toString(),score:1,total:1}); }
+  else { fb.textContent="❌ Pas tout à fait, réessaie !"; fb.classList.add('text-red-600'); }
+}
+
+// ═══════════════════════════════════════════════════
+// UTILITAIRES
+// ═══════════════════════════════════════════════════
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-.5); }
+
+// ═══════════════════════════════════════════════════
+// GÉNÉRATION QUESTIONS (existantes)
+// ═══════════════════════════════════════════════════
+function makeNombresQuestion(max,correct) {
+  if(correct===undefined) correct=randInt(1,max);
+  const nums=new Set([correct]);
+  let attempts=0;
+  while(nums.size<4&&attempts<50){attempts++;const nearby=Math.random()<0.5;const n=nearby?correct+randInt(1,5)*(Math.random()<0.5?1:-1):randInt(1,max);if(n>=1&&n<=max&&n!==correct)nums.add(n);}
+  while(nums.size<4){const n=randInt(1,max);if(n!==correct)nums.add(n);}
+  const choices=shuffle([...nums].map(n=>({display:toFrench(n),isCorrect:n===correct})));
+  return {instruction:'Quel est le nom de ce nombre ?',picto:'👁️',question:correct.toString(),qSize:'text-7xl',type:'qcm',choices,correctAnswer:toFrench(correct),ttsText:`Quel est le nom du nombre ${correct} ?`};
+}
+function makeTableDistractors(correct){
+  const pool=new Set();
+  for(let d=1;d<=6;d++){if(correct-d>0)pool.add(correct-d);pool.add(correct+d);}
+  for(let i=2;i<=10;i++) for(let j=1;j<=10;j++) if(i*j!==correct)pool.add(i*j);
+  return shuffle([...pool].filter(v=>v!==correct)).slice(0,3);
+}
+function makeTableQuestion(tableNum,mode,b){
+  const a=tableNum===0?randInt(2,10):tableNum;
+  if(b===undefined) b=randInt(1,10);
+  const correct=a*b;
+  if(mode==='A'){
+    const distractors=makeTableDistractors(correct);
+    const choices=shuffle([{display:correct.toString(),isCorrect:true},...distractors.map(d=>({display:d.toString(),isCorrect:false}))]);
+    return {instruction:'Quelle est la réponse ?',picto:'✖️',question:`${a} × ${b} = ?`,qSize:'text-5xl',type:'qcm',choices,correctAnswer:correct.toString(),ttsText:`Combien font ${a} fois ${b} ?`};
+  }
+  if(mode==='B') return {instruction:'Écris la réponse en chiffres',picto:'✖️',question:`${a} × ${b} = ?`,qSize:'text-5xl',type:'input_num',correctAnswer:correct.toString(),ttsText:`Combien font ${a} fois ${b} ? Écris en chiffres.`};
+  return {instruction:'Écris la réponse en français',picto:'✖️',question:`${a} × ${b} = ?`,qSize:'text-5xl',type:'input_letters',correctAnswer:toFrench(correct),ttsText:`Combien font ${a} fois ${b} ? Écris en lettres.`};
+}
+const ADDITION_MAX=[null,10,20,50,100];
+const SOUSTRACTION_MAX=[null,10,20,50,100];
+function makeAdditionDistractors(correct){const pool=new Set();for(let d=1;d<=5;d++){if(correct-d>=0)pool.add(correct-d);pool.add(correct+d);}return shuffle([...pool].filter(v=>v!==correct)).slice(0,3);}
+function makeAdditionQuestion(level){
+  const max=ADDITION_MAX[level];
+  let a,b;do{a=randInt(0,max);b=randInt(0,max);}while(a+b>max);
+  const correct=a+b;
+  if(level<=2){const choices=shuffle([{display:correct.toString(),isCorrect:true},...makeAdditionDistractors(correct).map(d=>({display:d.toString(),isCorrect:false}))]);return{instruction:'Quelle est la réponse ?',picto:'➕',question:`${a} + ${b} = ?`,qSize:'text-5xl',type:'qcm',choices,correctAnswer:correct.toString(),ttsText:`Combien font ${a} plus ${b} ?`};}
+  return{instruction:'Écris la réponse en chiffres',picto:'➕',question:`${a} + ${b} = ?`,qSize:'text-5xl',type:'input_num',correctAnswer:correct.toString(),ttsText:`Combien font ${a} plus ${b} ?`};
+}
+function makeSoustractionQuestion(level){
+  const max=SOUSTRACTION_MAX[level];
+  const a=randInt(0,max);const b=randInt(0,a);const correct=a-b;
+  if(level<=2){const choices=shuffle([{display:correct.toString(),isCorrect:true},...makeAdditionDistractors(correct).map(d=>({display:d.toString(),isCorrect:false}))]);return{instruction:'Quelle est la réponse ?',picto:'➖',question:`${a} − ${b} = ?`,qSize:'text-5xl',type:'qcm',choices,correctAnswer:correct.toString(),ttsText:`Combien font ${a} moins ${b} ?`};}
+  return{instruction:'Écris la réponse en chiffres',picto:'➖',question:`${a} − ${b} = ?`,qSize:'text-5xl',type:'input_num',correctAnswer:correct.toString(),ttsText:`Combien font ${a} moins ${b} ?`};
+}
+
+// ═══════════════════════════════════════════════════
+// ═══ NOUVEAU : L'HEURE ═══════════════════════════
+// ═══════════════════════════════════════════════════
+
+function showHeureLevels() {
+  document.getElementById('levels-title').textContent='🕐 Lire l\'heure';
+  const niveaux=[
+    {id:1,label:'Niveau 1 — Heures entières',sub:'12h, 13h, 16h… Horloge analogique → texte'},
+    {id:2,label:'Niveau 2 — Demi-heures et quarts',sub:'10h30, 14h15… Horloge analogique → texte'},
+    {id:3,label:'Niveau 3 — Minutes',sub:'Toutes les 5 minutes, heure numérique → analogique'},
   ];
-  document.getElementById('levels-list').innerHTML = niveaux.map(n => `
-    <button onclick="startCarreMagique(${n.id})"
-      class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-purple-300">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="font-bold text-gray-800 text-lg">${n.label}</p>
-          <p class="text-sm text-gray-400 mt-0.5">${n.sub}</p>
-        </div>
-        <span class="text-purple-400 text-2xl">›</span>
-      </div>
-    </button>`).join('');
+  document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startHeureQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-yellow-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-yellow-400 text-2xl">›</span></div></button>`).join('');
   show('levels');
 }
 
-function startCarreMagique(level) {
-  currentMagicLevel = level;
-  currentMagicSquare = MAGIC_SQUARES[randInt(0, MAGIC_SQUARES.length - 1)].map(r => [...r]);
-  const nbHidden = MAGIC_HIDDEN[level];
-
-  const allCells = [];
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) allCells.push([r, c]);
-  magicHiddenCells = shuffle(allCells).slice(0, nbHidden);
-
-  const hiddenSet = new Set(magicHiddenCells.map(([r,c]) => `${r}-${c}`));
-  const magicSum = currentMagicSquare[0].reduce((s, v) => s + v, 0);
-
-  document.getElementById('magic-desc').textContent = `Complète la grille — la somme magique est ${magicSum}.`;
-  document.getElementById('magic-feedback').classList.add('hidden');
-  document.getElementById('magic-check-btn').disabled = false;
-  document.getElementById('magic-check-btn').classList.remove('opacity-50');
-
-  document.getElementById('magic-grid').innerHTML = currentMagicSquare.flatMap((row, r) =>
-    row.map((val, c) => {
-      const hidden = hiddenSet.has(`${r}-${c}`);
-      return hidden
-        ? `<input id="mc-${r}-${c}" type="number" min="1" max="100"
-            class="w-full aspect-square text-center text-2xl font-bold border-2 border-purple-300 rounded-xl focus:outline-none focus:border-purple-500 bg-white">`
-        : `<div class="w-full aspect-square flex items-center justify-center text-2xl font-bold bg-gray-100 rounded-xl text-gray-700">${val}</div>`;
-    })
-  ).join('');
-
-  show('magic');
+function generateHeureTime(level) {
+  if(level===1) { const h=randInt(1,12); return {h, m:0}; }
+  if(level===2) { const h=randInt(1,12); const m=[0,15,30,45][randInt(0,3)]; return {h,m}; }
+  const h=randInt(1,12); const m=randInt(0,11)*5; return {h,m};
 }
 
-function checkCarreMagique() {
-  let allCorrect = true;
-  for (const [r, c] of magicHiddenCells) {
-    const inp = document.getElementById(`mc-${r}-${c}`);
-    const val = parseInt(inp.value);
-    if (val === currentMagicSquare[r][c]) {
-      inp.classList.add('border-green-400', 'bg-green-50');
-      inp.classList.remove('border-purple-300', 'border-red-400', 'bg-red-50');
-    } else {
-      inp.classList.add('border-red-400', 'bg-red-50');
-      inp.classList.remove('border-purple-300', 'border-green-400', 'bg-green-50');
-      allCorrect = false;
+function formatHeure(h,m,mode24=false) {
+  const hh = mode24 ? (h===12?12:h) : h;
+  if(m===0) return mode24 ? `${hh}h00` : `${hh} heure${hh>1?'s':''}`;
+  if(m===15) return `${hh}h15`;
+  if(m===30) return `${hh}h30`;
+  if(m===45) return `${hh}h45`;
+  return `${hh}h${m<10?'0'+m:m}`;
+}
+
+function buildClockSVG(h, m, size=180) {
+  const cx=size/2, cy=size/2, r=size/2-6;
+  const hourAngle = ((h%12) + m/60) * 30 - 90;
+  const minAngle  = m * 6 - 90;
+  const hRad=hourAngle*Math.PI/180, mRad=minAngle*Math.PI/180;
+  const hLen=r*0.55, mLen=r*0.8;
+  const hx2=cx+hLen*Math.cos(hRad), hy2=cy+hLen*Math.sin(hRad);
+  const mx2=cx+mLen*Math.cos(mRad), my2=cy+mLen*Math.sin(mRad);
+  let ticks='';
+  for(let i=0;i<12;i++){
+    const ang=(i*30-90)*Math.PI/180;
+    const r1=r-2, r2=r-10;
+    ticks+=`<line x1="${cx+r1*Math.cos(ang)}" y1="${cy+r1*Math.sin(ang)}" x2="${cx+r2*Math.cos(ang)}" y2="${cy+r2*Math.sin(ang)}" stroke="#374151" stroke-width="2"/>`;
+  }
+  let nums='';
+  for(let i=1;i<=12;i++){
+    const ang=(i*30-90)*Math.PI/180;
+    const nr=r-22;
+    nums+=`<text x="${cx+nr*Math.cos(ang)}" y="${cy+nr*Math.sin(ang)}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#374151" font-weight="600">${i}</text>`;
+  }
+  return `<svg width="${size}" height="${size}" class="clock-svg" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="white" stroke="#d1d5db" stroke-width="2"/>
+    ${ticks}${nums}
+    <line x1="${cx}" y1="${cy}" x2="${hx2}" y2="${hy2}" stroke="#1e3a5f" stroke-width="5" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy}" x2="${mx2}" y2="${my2}" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="4" fill="#374151"/>
+  </svg>`;
+}
+
+function makeHeureQuestion(level) {
+  const {h,m} = generateHeureTime(level);
+  const correct = formatHeure(h,m,true);
+  // Distracteurs
+  const distractors=[];
+  while(distractors.length<3){
+    const {h:dh,m:dm}=generateHeureTime(level);
+    const df=formatHeure(dh,dm,true);
+    if(df!==correct && !distractors.includes(df)) distractors.push(df);
+  }
+  const choices=shuffle([{display:correct,isCorrect:true},...distractors.map(d=>({display:d,isCorrect:false}))]);
+  return {h,m,correct,instruction:'Quelle heure est-il ?',picto:'🕐',question:'',qSize:'',type:'qcm_heure',choices,correctAnswer:correct,ttsText:`Quelle heure est-il ?`};
+}
+
+function startHeureQuiz(level) {
+  currentHeureLevel=level;
+  const questions=Array.from({length:8},()=>makeHeureQuestion(level));
+  lastQuizConfig={type:'heure',level:level.toString()};
+  beginQuiz(questions,'heure',level.toString());
+}
+
+// ═══════════════════════════════════════════════════
+// ═══ NOUVEAU : MONNAIE ═══════════════════════════
+// ═══════════════════════════════════════════════════
+
+const COINS=[
+  {val:1,  label:'1 c',  color:'#b45309', size:36},
+  {val:2,  label:'2 c',  color:'#b45309', size:38},
+  {val:5,  label:'5 c',  color:'#b45309', size:40},
+  {val:10, label:'10 c', color:'#d97706', size:38},
+  {val:20, label:'20 c', color:'#d97706', size:40},
+  {val:50, label:'50 c', color:'#d97706', size:44},
+  {val:100,label:'1 €',  color:'#6b7280', size:44},
+  {val:200,label:'2 €',  color:'#6b7280', size:48},
+  {val:500,label:'5 €',  color:'#166534', size:'billet'},
+  {val:1000,label:'10 €',color:'#1d4ed8',size:'billet'},
+  {val:2000,label:'20 €',color:'#7c3aed',size:'billet'},
+];
+
+let monnaieSelectedCoins=[];
+let monnaieCibleCentimes=0;
+
+function showMonnaieLevels() {
+  document.getElementById('levels-title').textContent='💶 La monnaie';
+  const niveaux=[
+    {id:1,label:'Niveau 1 — Petites pièces',sub:'Centimes : 1c, 2c, 5c, 10c, 20c, 50c'},
+    {id:2,label:'Niveau 2 — Euros entiers',sub:'Pièces de 1€ et 2€, billets 5€ et 10€'},
+    {id:3,label:'Niveau 3 — Mélange',sub:'Euros et centimes, rendre la monnaie'},
+  ];
+  document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startMonnaieQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-emerald-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-emerald-400 text-2xl">›</span></div></button>`).join('');
+  show('levels');
+}
+
+function makeMontant(level) {
+  if(level===1) return randInt(1,9)*5+randInt(0,4)*1;  // 1-49 centimes
+  if(level===2) return randInt(1,10)*100;              // 1-10 euros entiers (en centimes)
+  const euros=randInt(0,5)*100; const cents=[0,5,10,20,25,50][randInt(0,5)]; return euros+cents||randInt(1,9)*10;
+}
+
+function formatMontant(centimes) {
+  if(centimes<100) return centimes+'&nbsp;centimes';
+  const e=Math.floor(centimes/100), c=centimes%100;
+  if(c===0) return `${e}&nbsp;euro${e>1?'s':''}`;
+  return `${e},${c<10?'0'+c:c}&nbsp;€`;
+}
+
+function makeMontantStr(centimes) {
+  if(centimes<100) return centimes+' centimes';
+  const e=Math.floor(centimes/100),c=centimes%100;
+  if(c===0) return `${e} euro${e>1?'s':''}`;
+  return `${e},${c<10?'0'+c:c} €`;
+}
+
+function makeMonnaieQuestion(level) {
+  const cible=makeMontant(level);
+  return {instruction:'Forme le montant exact avec les pièces',picto:'💶',question:`<span style="font-size:2.5rem;font-weight:900;color:#065f46;">${formatMontant(cible)}</span>`,qSize:'',type:'monnaie',correctAnswer:cible,ttsText:`Forme le montant : ${makeMontantStr(cible)}`};
+}
+
+function startMonnaieQuiz(level) {
+  lastQuizConfig={type:'monnaie',level:level.toString()};
+  const questions=Array.from({length:6},()=>makeMonnaieQuestion(level));
+  beginQuiz(questions,'monnaie',level.toString());
+}
+
+function renderMonnaiePicker(level) {
+  monnaieSelectedCoins=[];
+  let coinsToShow=COINS;
+  if(level===1) coinsToShow=COINS.filter(c=>c.val<=50);
+  else if(level===2) coinsToShow=COINS.filter(c=>c.val>=100&&c.val<=1000);
+  document.getElementById('monnaie-coins').innerHTML=coinsToShow.map(c=>{
+    if(c.size==='billet'){
+      return `<button onclick="toggleCoin(${c.val})" id="coin-${c.val}" class="coin px-4 py-2 rounded-lg text-white font-bold text-sm border-2 border-white" style="background:${c.color};min-width:72px">${c.label}</button>`;
     }
+    return `<button onclick="toggleCoin(${c.val})" id="coin-${c.val}" class="coin rounded-full text-white font-bold flex items-center justify-center border-2 border-white" style="width:${c.size}px;height:${c.size}px;background:${c.color};font-size:${c.val>=100?'12px':'10px'}">${c.label}</button>`;
+  }).join('');
+  updateMonnaieTotal();
+}
+
+function toggleCoin(val) {
+  monnaieSelectedCoins.push(val);
+  const total=monnaieSelectedCoins.reduce((s,v)=>s+v,0);
+  if(total>monnaieCibleCentimes*1.5 && monnaieCibleCentimes>0){
+    monnaieSelectedCoins.pop();
+    return;
   }
-  const fb = document.getElementById('magic-feedback');
-  fb.classList.remove('hidden', 'text-green-600', 'text-red-600');
-  if (allCorrect) {
-    fb.textContent = '🎉 Bravo, c\'est correct !';
-    fb.classList.add('text-green-600');
-    document.getElementById('magic-check-btn').disabled = true;
-    document.getElementById('magic-check-btn').classList.add('opacity-50');
-    saveSession({ student_name: user.name, class_id: user.classId, exercise_type: 'magic', level: currentMagicLevel.toString(), score: 1, total: 1 });
-  } else {
-    fb.textContent = '❌ Pas tout à fait, réessaie !';
-    fb.classList.add('text-red-600');
+  updateMonnaieTotal();
+}
+
+function updateMonnaieTotal(){
+  const total=monnaieSelectedCoins.reduce((s,v)=>s+v,0);
+  const euros=Math.floor(total/100), cents=total%100;
+  let str= total<100 ? total+' c' : `${euros},${cents<10?'0'+cents:cents} €`;
+  document.getElementById('monnaie-total').textContent=str;
+}
+
+function submitMonnaie(){
+  const total=monnaieSelectedCoins.reduce((s,v)=>s+v,0);
+  const correct=total===quiz.questions[quiz.current].correctAnswer;
+  if(correct) quiz.score++;
+  const correctAnswer=makeMontantStr(quiz.questions[quiz.current].correctAnswer);
+  showFeedback(correct,correct?null:correctAnswer);
+  document.getElementById('q-monnaie-btn').disabled=true;
+  document.getElementById('monnaie-coins').querySelectorAll('.coin').forEach(b=>b.disabled=true);
+}
+
+// ═══════════════════════════════════════════════════
+// ═══ NOUVEAU : GÉOMÉTRIE ═════════════════════════
+// ═══════════════════════════════════════════════════
+
+const SHAPES=[
+  {id:'carre',name:'Carré',sides:4,equal:true,svg:(c)=>`<rect x="${c-45}" y="${c-45}" width="90" height="90" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5" rx="2"/>`,descr:'4 côtés égaux, 4 angles droits'},
+  {id:'rectangle',name:'Rectangle',sides:4,equal:false,svg:(c)=>`<rect x="${c-60}" y="${c-35}" width="120" height="70" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" rx="2"/>`,descr:'4 côtés, angles droits, 2 paires de côtés égaux'},
+  {id:'triangle',name:'Triangle',sides:3,equal:false,svg:(c)=>`<polygon points="${c},${c-55} ${c-50},${c+40} ${c+50},${c+40}" fill="#fef9c3" stroke="#ca8a04" stroke-width="2.5"/>`,descr:'3 côtés, 3 angles'},
+  {id:'cercle',name:'Cercle',sides:0,equal:false,svg:(c)=>`<circle cx="${c}" cy="${c}" r="50" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>`,descr:'Pas de côté, forme ronde'},
+  {id:'losange',name:'Losange',sides:4,equal:true,svg:(c)=>`<polygon points="${c},${c-55} ${c+50},${c} ${c},${c+55} ${c-50},${c}" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>`,descr:'4 côtés égaux'},
+  {id:'pentagone',name:'Pentagone',sides:5,equal:true,svg:(c)=>{const pts=Array.from({length:5},(_,i)=>{const a=(i*72-90)*Math.PI/180;return `${c+50*Math.cos(a)},${c+50*Math.sin(a)}`;}).join(' ');return `<polygon points="${pts}" fill="#ffedd5" stroke="#ea580c" stroke-width="2.5"/>`;},descr:'5 côtés égaux'},
+  {id:'hexagone',name:'Hexagone',sides:6,equal:true,svg:(c)=>{const pts=Array.from({length:6},(_,i)=>{const a=(i*60-90)*Math.PI/180;return `${c+50*Math.cos(a)},${c+50*Math.sin(a)}`;}).join(' ');return `<polygon points="${pts}" fill="#f0fdf4" stroke="#15803d" stroke-width="2.5"/>`;},descr:'6 côtés égaux'},
+];
+
+function showGeoLevels(){
+  document.getElementById('levels-title').textContent='📐 Géométrie';
+  const niveaux=[
+    {id:1,label:'Niveau 1 — Nommer les formes',sub:'Carré, rectangle, triangle, cercle'},
+    {id:2,label:'Niveau 2 — Compter les côtés',sub:'Combien de côtés a cette forme ?'},
+    {id:3,label:'Niveau 3 — Propriétés',sub:'Identifier les caractéristiques des formes'},
+  ];
+  document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startGeoQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-pink-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-pink-400 text-2xl">›</span></div></button>`).join('');
+  show('levels');
+}
+
+function makeGeoQuestion(level) {
+  const shape=SHAPES[randInt(0,SHAPES.length-1)];
+  const C=75;
+  const svgWrap=`<svg width="150" height="150" viewBox="0 0 150 150">${shape.svg(C)}</svg>`;
+  if(level===1){
+    const names=shuffle(SHAPES.map(s=>s.name));
+    const choices=shuffle([{display:shape.name,isCorrect:true},...names.filter(n=>n!==shape.name).slice(0,3).map(d=>({display:d,isCorrect:false}))]);
+    return {instruction:'Comment s\'appelle cette forme ?',picto:'📐',question:'',qSize:'',type:'qcm_geo',visualHTML:svgWrap,choices,correctAnswer:shape.name,ttsText:`Comment s'appelle cette forme ?`};
   }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// GÉNÉRATION DES QUESTIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
-}
-
-function makeNombresQuestion(max, correct) {
-  if (correct === undefined) correct = randInt(1, max);
-  const nums = new Set([correct]);
-  let attempts = 0;
-  while (nums.size < 4 && attempts < 50) {
-    attempts++;
-    const nearby = Math.random() < 0.5;
-    const n = nearby
-      ? correct + randInt(1, 5) * (Math.random() < 0.5 ? 1 : -1)
-      : randInt(1, max);
-    if (n >= 1 && n <= max && n !== correct) nums.add(n);
+  if(level===2){
+    const correct=shape.sides.toString();
+    const pool=[...new Set([0,3,4,5,6,8].filter(x=>x.toString()!==correct))];
+    const choices=shuffle([{display:correct,isCorrect:true},...shuffle(pool).slice(0,3).map(d=>({display:d.toString(),isCorrect:false}))]);
+    const q=shape.sides===0?'Cette forme a-t-elle des côtés ?':'Combien de côtés a cette forme ?';
+    const tts=shape.sides===0?'Cette forme a-t-elle des côtés ?':`Combien de côtés a ce ${shape.name} ?`;
+    return {instruction:q,picto:'📐',question:'',qSize:'',type:'qcm_geo',visualHTML:svgWrap,choices,correctAnswer:correct,ttsText:tts};
   }
-  while (nums.size < 4) {
-    const n = randInt(1, max);
-    if (n !== correct) nums.add(n);
-  }
-  const choices = shuffle([...nums].map(n => ({ display: toFrench(n), isCorrect: n === correct })));
-  return {
-    instruction: 'Quel est le nom de ce nombre ?',
-    question: correct.toString(),
-    qSize: 'text-7xl',
-    type: 'qcm',
-    choices,
-    correctAnswer: toFrench(correct)
-  };
+  // Niveau 3 : propriétés
+  const correctDescr=shape.descr;
+  const wrongDescrs=shuffle(SHAPES.filter(s=>s.id!==shape.id).map(s=>s.descr)).slice(0,3);
+  const choices=shuffle([{display:correctDescr,isCorrect:true},...wrongDescrs.map(d=>({display:d,isCorrect:false}))]);
+  return {instruction:'Quelle est la bonne description ?',picto:'📐',question:`C'est un ${shape.name}.`,qSize:'text-2xl',type:'qcm_geo',visualHTML:svgWrap,choices,correctAnswer:correctDescr,ttsText:`Quelle est la bonne description du ${shape.name} ?`};
 }
 
-function makeTableDistractors(correct) {
-  const pool = new Set();
-  for (let d = 1; d <= 6; d++) {
-    if (correct - d > 0) pool.add(correct - d);
-    pool.add(correct + d);
-  }
-  for (let i = 2; i <= 10; i++)
-    for (let j = 1; j <= 10; j++)
-      if (i * j !== correct) pool.add(i * j);
-  return shuffle([...pool].filter(v => v !== correct)).slice(0, 3);
+function startGeoQuiz(level){
+  currentGeoLevel=level;
+  const questions=Array.from({length:8},()=>makeGeoQuestion(level));
+  lastQuizConfig={type:'geo',level:level.toString()};
+  beginQuiz(questions,'geo',level.toString());
 }
 
-function makeTableQuestion(tableNum, mode, b) {
-  const a = tableNum === 0 ? randInt(2, 10) : tableNum;
-  if (b === undefined) b = randInt(1, 10);
-  const correct = a * b;
+// ═══════════════════════════════════════════════════
+// ═══ NOUVEAU : MESURES ═══════════════════════════
+// ═══════════════════════════════════════════════════
 
-  if (mode === 'A') {
-    const distractors = makeTableDistractors(correct);
-    const choices = shuffle([
-      { display: correct.toString(), isCorrect: true },
-      ...distractors.map(d => ({ display: d.toString(), isCorrect: false }))
-    ]);
-    return {
-      instruction: 'Quelle est la réponse ?',
-      question: `${a} × ${b} = ?`,
-      qSize: 'text-5xl',
-      type: 'qcm',
-      choices,
-      correctAnswer: correct.toString()
-    };
-  }
-  if (mode === 'B') {
-    return {
-      instruction: 'Écris la réponse en chiffres',
-      question: `${a} × ${b} = ?`,
-      qSize: 'text-5xl',
-      type: 'input_num',
-      correctAnswer: correct.toString()
-    };
-  }
-  return {
-    instruction: 'Écris la réponse en français',
-    question: `${a} × ${b} = ?`,
-    qSize: 'text-5xl',
-    type: 'input_letters',
-    correctAnswer: toFrench(correct)
-  };
+const MESURES_DATA=[
+  // [valeur, unité, type, equivalents]
+  {type:'longueur', questions:[
+    {q:'La hauteur d\'une porte est environ…',choices:['2 mètres','2 kilomètres','2 centimètres','20 millimètres'],correct:'2 mètres',tts:'La hauteur d\'une porte est environ combien ?'},
+    {q:'Un stylo mesure environ…',choices:['15 centimètres','15 mètres','15 kilomètres','150 millimètres'],correct:'15 centimètres',tts:'Un stylo mesure environ combien ?'},
+    {q:'La distance Paris–Lyon est environ…',choices:['500 kilomètres','500 mètres','500 centimètres','5 kilomètres'],correct:'500 kilomètres',tts:'La distance Paris Lyon est environ combien ?'},
+    {q:'1 mètre = … centimètres',choices:['100','10','1000','50'],correct:'100',tts:'Combien y a-t-il de centimètres dans un mètre ?'},
+    {q:'1 kilomètre = … mètres',choices:['1000','100','10','10000'],correct:'1000',tts:'Combien y a-t-il de mètres dans un kilomètre ?'},
+  ]},
+  {type:'masse', questions:[
+    {q:'Un cahier pèse environ…',choices:['200 grammes','200 kilogrammes','2 kilogrammes','2 tonnes'],correct:'200 grammes',tts:'Un cahier pèse environ combien ?'},
+    {q:'Une pomme pèse environ…',choices:['150 grammes','1,5 kilogrammes','15 grammes','1500 grammes'],correct:'150 grammes',tts:'Une pomme pèse environ combien ?'},
+    {q:'1 kilogramme = … grammes',choices:['1000','100','10','10000'],correct:'1000',tts:'Combien y a-t-il de grammes dans un kilogramme ?'},
+    {q:'Un élève pèse environ…',choices:['50 kilogrammes','50 grammes','500 grammes','5 kilogrammes'],correct:'50 kilogrammes',tts:'Un élève pèse environ combien ?'},
+  ]},
+  {type:'capacité', questions:[
+    {q:'Une bouteille d\'eau fait souvent…',choices:['1 litre','1 millilitre','10 litres','100 millilitres'],correct:'1 litre',tts:'Une bouteille d\'eau fait souvent combien ?'},
+    {q:'Une cuillère à soupe contient environ…',choices:['15 millilitres','15 litres','150 millilitres','1,5 litre'],correct:'15 millilitres',tts:'Une cuillère à soupe contient environ combien ?'},
+    {q:'1 litre = … millilitres',choices:['1000','100','10','10000'],correct:'1000',tts:'Combien y a-t-il de millilitres dans un litre ?'},
+    {q:'Un verre contient environ…',choices:['20 centilitres','2 litres','200 litres','2 millilitres'],correct:'20 centilitres',tts:'Un verre contient environ combien ?'},
+  ]},
+  {type:'température', questions:[
+    {q:'L\'eau bout à…',choices:['100°C','0°C','37°C','50°C'],correct:'100°C',tts:'L\'eau bout à quelle température ?'},
+    {q:'L\'eau gèle à…',choices:['0°C','100°C','-10°C','20°C'],correct:'0°C',tts:'L\'eau gèle à quelle température ?'},
+    {q:'La température normale du corps humain est…',choices:['37°C','20°C','100°C','0°C'],correct:'37°C',tts:'La température normale du corps humain est combien ?'},
+    {q:'Une belle journée d\'été en France, il fait environ…',choices:['25°C','5°C','50°C','-5°C'],correct:'25°C',tts:'En été en France, il fait environ combien ?'},
+  ]},
+];
+
+function showMesuresLevels(){
+  document.getElementById('levels-title').textContent='📏 Mesures & Unités';
+  const niveaux=[
+    {id:1,label:'Niveau 1 — Longueurs',sub:'cm, m, km — estimer et convertir'},
+    {id:2,label:'Niveau 2 — Masses',sub:'g, kg — estimer et convertir'},
+    {id:3,label:'Niveau 3 — Capacités',sub:'mL, cL, L — estimer et convertir'},
+    {id:4,label:'Niveau 4 — Températures',sub:'°C — lire et comprendre'},
+  ];
+  document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startMesuresQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-cyan-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-cyan-400 text-2xl">›</span></div></button>`).join('');
+  show('levels');
 }
 
-const ADDITION_MAX    = [null, 10, 20, 50, 100];
-const SOUSTRACTION_MAX = [null, 10, 20, 50, 100];
-
-function makeAdditionDistractors(correct) {
-  const pool = new Set();
-  for (let d = 1; d <= 5; d++) {
-    if (correct - d >= 0) pool.add(correct - d);
-    pool.add(correct + d);
-  }
-  return shuffle([...pool].filter(v => v !== correct)).slice(0, 3);
+function makeMesuresQuestion(level){
+  const type=['longueur','masse','capacité','température'][level-1];
+  const pool=MESURES_DATA.find(d=>d.type===type).questions;
+  const q=pool[randInt(0,pool.length-1)];
+  const choices=shuffle(q.choices.map(c=>({display:c,isCorrect:c===q.correct})));
+  const pictos={'longueur':'📏','masse':'⚖️','capacité':'💧','température':'🌡️'};
+  return {instruction:q.q,picto:pictos[type],question:'',qSize:'',type:'qcm',choices,correctAnswer:q.correct,ttsText:q.tts};
 }
 
-function makeAdditionQuestion(level) {
-  const max = ADDITION_MAX[level];
-  let a, b;
-  do { a = randInt(0, max); b = randInt(0, max); } while (a + b > max);
-  const correct = a + b;
-  if (level <= 2) {
-    const choices = shuffle([
-      { display: correct.toString(), isCorrect: true },
-      ...makeAdditionDistractors(correct).map(d => ({ display: d.toString(), isCorrect: false }))
-    ]);
-    return { instruction: 'Quelle est la réponse ?', question: `${a} + ${b} = ?`, qSize: 'text-5xl', type: 'qcm', choices, correctAnswer: correct.toString() };
-  }
-  return { instruction: 'Écris la réponse en chiffres', question: `${a} + ${b} = ?`, qSize: 'text-5xl', type: 'input_num', correctAnswer: correct.toString() };
+function startMesuresQuiz(level){
+  currentMesureLevel=level;
+  const questions=Array.from({length:8},()=>makeMesuresQuestion(level));
+  lastQuizConfig={type:'mesures',level:level.toString()};
+  beginQuiz(questions,'mesures',level.toString());
 }
 
-function makeSoustractionQuestion(level) {
-  const max = SOUSTRACTION_MAX[level];
-  const a = randInt(0, max);
-  const b = randInt(0, a);
-  const correct = a - b;
-  if (level <= 2) {
-    const choices = shuffle([
-      { display: correct.toString(), isCorrect: true },
-      ...makeAdditionDistractors(correct).map(d => ({ display: d.toString(), isCorrect: false }))
-    ]);
-    return { instruction: 'Quelle est la réponse ?', question: `${a} − ${b} = ?`, qSize: 'text-5xl', type: 'qcm', choices, correctAnswer: correct.toString() };
-  }
-  return { instruction: 'Écris la réponse en chiffres', question: `${a} − ${b} = ?`, qSize: 'text-5xl', type: 'input_num', correctAnswer: correct.toString() };
+// ═══════════════════════════════════════════════════
+// DÉMARRAGE DES QUIZ (existants)
+// ═══════════════════════════════════════════════════
+const NB_QUESTIONS=10;
+function startNombresQuiz(max){
+  const pool=shuffle(Array.from({length:max},(_,i)=>i+1)).slice(0,NB_QUESTIONS);
+  const questions=pool.map(n=>makeNombresQuestion(max,n));
+  lastQuizConfig={type:'nombres',level:max.toString()};
+  beginQuiz(questions,'nombres',max.toString());
+}
+function startTablesQuiz(tableNum,mode){
+  const multipliers=shuffle(Array.from({length:10},(_,i)=>i+1)).slice(0,NB_QUESTIONS);
+  const questions=multipliers.map(b=>makeTableQuestion(tableNum,mode,b));
+  lastQuizConfig={type:'tables',level:`${tableNum}_${mode}`,tableNum,mode};
+  beginQuiz(questions,'tables',`${tableNum}_${mode}`);
+}
+function startAdditionsQuiz(level){
+  const questions=Array.from({length:NB_QUESTIONS},()=>makeAdditionQuestion(level));
+  lastQuizConfig={type:'additions',level:level.toString()};
+  beginQuiz(questions,'additions',level.toString());
+}
+function startSoustractionsQuiz(level){
+  const questions=Array.from({length:NB_QUESTIONS},()=>makeSoustractionQuestion(level));
+  lastQuizConfig={type:'soustractions',level:level.toString()};
+  beginQuiz(questions,'soustractions',level.toString());
+}
+function restartQuiz(){
+  if(!lastQuizConfig) return;
+  const t=lastQuizConfig;
+  if(t.type==='nombres') startNombresQuiz(parseInt(t.level));
+  else if(t.type==='additions') startAdditionsQuiz(parseInt(t.level));
+  else if(t.type==='soustractions') startSoustractionsQuiz(parseInt(t.level));
+  else if(t.type==='heure') startHeureQuiz(parseInt(t.level));
+  else if(t.type==='monnaie') startMonnaieQuiz(parseInt(t.level));
+  else if(t.type==='geo') startGeoQuiz(parseInt(t.level));
+  else if(t.type==='mesures') startMesuresQuiz(parseInt(t.level));
+  else startTablesQuiz(t.tableNum,t.mode);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// LANCEMENT DU QUIZ
-// ═══════════════════════════════════════════════════════════════════════════
-
-const NB_QUESTIONS = 10;
-
-function startNombresQuiz(max) {
-  const allNums = Array.from({ length: max }, (_, i) => i + 1);
-  const pool = shuffle(allNums).slice(0, NB_QUESTIONS);
-  const questions = pool.map(n => makeNombresQuestion(max, n));
-  lastQuizConfig = { type: 'nombres', level: max.toString() };
-  beginQuiz(questions, 'nombres', max.toString());
-}
-
-function startTablesQuiz(tableNum, mode) {
-  const multipliers = shuffle(Array.from({ length: 10 }, (_, i) => i + 1)).slice(0, NB_QUESTIONS);
-  const questions = multipliers.map(b => makeTableQuestion(tableNum, mode, b));
-  lastQuizConfig = { type: 'tables', level: `${tableNum}_${mode}`, tableNum, mode };
-  beginQuiz(questions, 'tables', `${tableNum}_${mode}`);
-}
-
-function startAdditionsQuiz(level) {
-  const questions = Array.from({ length: NB_QUESTIONS }, () => makeAdditionQuestion(level));
-  lastQuizConfig = { type: 'additions', level: level.toString() };
-  beginQuiz(questions, 'additions', level.toString());
-}
-
-function startSoustractionsQuiz(level) {
-  const questions = Array.from({ length: NB_QUESTIONS }, () => makeSoustractionQuestion(level));
-  lastQuizConfig = { type: 'soustractions', level: level.toString() };
-  beginQuiz(questions, 'soustractions', level.toString());
-}
-
-function restartQuiz() {
-  if (lastQuizConfig.type === 'nombres') {
-    startNombresQuiz(parseInt(lastQuizConfig.level));
-  } else if (lastQuizConfig.type === 'additions') {
-    startAdditionsQuiz(parseInt(lastQuizConfig.level));
-  } else if (lastQuizConfig.type === 'soustractions') {
-    startSoustractionsQuiz(parseInt(lastQuizConfig.level));
-  } else {
-    startTablesQuiz(lastQuizConfig.tableNum, lastQuizConfig.mode);
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // MOTEUR DU QUIZ
-// ═══════════════════════════════════════════════════════════════════════════
-
-function beginQuiz(questions, type, level) {
-  quiz = { questions, current: 0, score: 0, type, level };
-  document.getElementById('q-total').textContent = questions.length;
+// ═══════════════════════════════════════════════════
+function beginQuiz(questions,type,level){
+  quiz={questions,current:0,score:0,type,level};
+  document.getElementById('q-total').textContent=questions.length;
   show('quiz');
   renderQuestion();
 }
 
-function renderQuestion() {
-  const q   = quiz.questions[quiz.current];
-  const idx = quiz.current;
+function renderQuestion(){
+  const q=quiz.questions[quiz.current];
+  const idx=quiz.current;
+  document.getElementById('q-current').textContent=idx+1;
+  document.getElementById('q-score').textContent=quiz.score;
+  document.getElementById('q-progress').style.width=`${(idx/quiz.questions.length)*100}%`;
+  document.getElementById('q-instruction').textContent=q.instruction;
+  document.getElementById('q-picto').textContent=q.picto||'';
 
-  document.getElementById('q-current').textContent  = idx + 1;
-  document.getElementById('q-score').textContent    = quiz.score;
-  document.getElementById('q-progress').style.width = `${(idx / quiz.questions.length) * 100}%`;
-  document.getElementById('q-instruction').textContent = q.instruction;
+  // TTS
+  maybeSpeak(q.ttsText||q.instruction+' '+q.question);
 
-  const qEl = document.getElementById('q-question');
-  qEl.textContent = q.question;
-  qEl.className   = `${q.qSize} font-bold text-blue-700 leading-tight`;
+  const qEl=document.getElementById('q-question');
+  qEl.innerHTML=q.question;
+  qEl.className=`${q.qSize} font-bold text-blue-700 leading-tight`;
+
+  // Visual spécial
+  const qVis=document.getElementById('q-visual');
+  qVis.innerHTML='';
 
   document.getElementById('q-feedback').classList.add('hidden');
   document.getElementById('q-next').classList.add('hidden');
+  document.getElementById('q-choices').classList.add('hidden');
+  document.getElementById('q-input-section').classList.add('hidden');
+  document.getElementById('q-monnaie-section').classList.add('hidden');
 
-  const card = document.getElementById('question-card');
-  card.classList.remove('fade-in');
-  void card.offsetWidth;
-  card.classList.add('fade-in');
+  const card=document.getElementById('question-card');
+  card.classList.remove('fade-in'); void card.offsetWidth; card.classList.add('fade-in');
 
-  if (q.type === 'qcm') {
-    document.getElementById('q-choices').classList.remove('hidden');
-    document.getElementById('q-input-section').classList.add('hidden');
-    document.getElementById('q-choices').innerHTML = q.choices.map(c => `
-      <button onclick="handleQCM(this, ${c.isCorrect}, \`${c.display.replace(/`/g, '\\`')}\`)"
-        class="choice-btn w-full py-5 px-3 border-2 border-gray-200 rounded-xl text-lg font-semibold text-gray-700 bg-white text-center">
-        ${c.display}
-      </button>`).join('');
+  if(q.type==='qcm_heure'){
+    // Afficher l'horloge SVG
+    qVis.innerHTML=buildClockSVG(q.h,q.m,160);
+    renderQCM(q);
+  } else if(q.type==='qcm_geo'){
+    if(q.visualHTML) qVis.innerHTML=q.visualHTML;
+    renderQCM(q);
+  } else if(q.type==='monnaie'){
+    monnaieCibleCentimes=q.correctAnswer;
+    const monSection=document.getElementById('q-monnaie-section');
+    monSection.classList.remove('hidden');
+    const level=parseInt(lastQuizConfig.level);
+    renderMonnaiePicker(level);
+    document.getElementById('q-monnaie-btn').disabled=false;
+  } else if(q.type==='qcm'){
+    renderQCM(q);
   } else {
     document.getElementById('q-choices').classList.add('hidden');
     document.getElementById('q-input-section').classList.remove('hidden');
-    const inp = document.getElementById('q-input');
-    inp.value    = '';
-    inp.disabled = false;
-    document.getElementById('q-validate-btn').disabled = false;
-    inp.onkeydown = e => { if (e.key === 'Enter') submitInputAnswer(); };
-    setTimeout(() => inp.focus(), 100);
+    const inp=document.getElementById('q-input');
+    inp.value=''; inp.disabled=false;
+    inp.type=q.type==='input_num'?'number':'text';
+    document.getElementById('q-validate-btn').disabled=false;
+    inp.onkeydown=e=>{ if(e.key==='Enter') submitInputAnswer(); };
+    setTimeout(()=>inp.focus(),100);
   }
 }
 
-function handleQCM(btn, isCorrect, display) {
-  document.querySelectorAll('.choice-btn').forEach(b => {
-    b.disabled = true;
-    b.classList.remove('hover:border-blue-400', 'hover:bg-blue-50');
-  });
-  if (isCorrect) {
-    btn.classList.add('correct');
-    quiz.score++;
-    showFeedback(true, null);
-  } else {
+function renderQCM(q){
+  document.getElementById('q-choices').classList.remove('hidden');
+  const isLong = q.choices && q.choices.some(c=>c.display.length>12);
+  document.getElementById('q-choices').className = isLong ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-2 gap-3';
+  document.getElementById('q-choices').innerHTML=q.choices.map(c=>`
+    <button onclick="handleQCM(this,${c.isCorrect},\`${c.display.replace(/`/g,'\\`')}\`)"
+      class="choice-btn w-full py-4 px-3 border-2 border-gray-200 rounded-xl text-base font-semibold text-gray-700 bg-white text-center">
+      ${c.display}
+    </button>`).join('');
+}
+
+function handleQCM(btn,isCorrect,display){
+  document.querySelectorAll('.choice-btn').forEach(b=>{b.disabled=true;});
+  if(isCorrect){ btn.classList.add('correct'); quiz.score++; showFeedback(true,null); }
+  else {
     btn.classList.add('incorrect');
-    document.querySelectorAll('.choice-btn').forEach(b => {
-      if (b.textContent.trim() === quiz.questions[quiz.current].correctAnswer) {
-        b.classList.add('correct');
-      }
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      if(b.textContent.trim()===quiz.questions[quiz.current].correctAnswer) b.classList.add('correct');
     });
-    showFeedback(false, quiz.questions[quiz.current].correctAnswer);
+    showFeedback(false,quiz.questions[quiz.current].correctAnswer);
   }
 }
 
-function submitInputAnswer() {
-  const inp = document.getElementById('q-input');
-  const val = inp.value.trim();
-  if (!val) return;
-
-  inp.disabled = true;
-  document.getElementById('q-validate-btn').disabled = true;
-
-  const q = quiz.questions[quiz.current];
+function submitInputAnswer(){
+  const inp=document.getElementById('q-input');
+  const val=inp.value.trim();
+  if(!val) return;
+  inp.disabled=true;
+  document.getElementById('q-validate-btn').disabled=true;
+  const q=quiz.questions[quiz.current];
   let correct;
-  if (q.type === 'input_num') {
-    correct = parseInt(val) === parseInt(q.correctAnswer);
-  } else {
-    correct = normalize(val) === normalize(q.correctAnswer);
-  }
-
-  if (correct) quiz.score++;
-  showFeedback(correct, correct ? null : q.correctAnswer);
+  if(q.type==='input_num') correct=parseInt(val)===parseInt(q.correctAnswer);
+  else correct=normalize(val)===normalize(q.correctAnswer);
+  if(correct) quiz.score++;
+  showFeedback(correct,correct?null:q.correctAnswer);
 }
 
-function showFeedback(correct, correctAnswer) {
-  const fb     = document.getElementById('q-feedback');
-  const text   = document.getElementById('q-feedback-text');
-  const detail = document.getElementById('q-feedback-detail');
-
-  if (correct) {
-    fb.className       = 'mt-4 p-4 rounded-xl text-center bg-green-50 border-2 border-green-200';
-    text.className     = 'font-bold text-lg text-green-700';
-    text.textContent   = '✓ Bravo ! C\'est correct !';
-    detail.textContent = '';
+function showFeedback(correct,correctAnswer){
+  const fb=document.getElementById('q-feedback');
+  const text=document.getElementById('q-feedback-text');
+  const detail=document.getElementById('q-feedback-detail');
+  if(correct){
+    fb.className='mt-4 p-4 rounded-xl text-center bg-green-50 border-2 border-green-200';
+    text.className='font-bold text-lg text-green-700'; text.textContent='✓ Bravo ! C\'est correct !';
+    detail.textContent='';
+    if(ttsEnabled) speak('Bravo, c\'est correct !');
   } else {
-    fb.className     = 'mt-4 p-4 rounded-xl text-center bg-red-50 border-2 border-red-200';
-    text.className   = 'font-bold text-lg text-red-600';
-    text.textContent = '✗ Pas tout à fait…';
-    detail.textContent = `La bonne réponse : ${correctAnswer}`;
-    detail.className   = 'text-sm mt-1 text-red-500 font-semibold';
+    fb.className='mt-4 p-4 rounded-xl text-center bg-red-50 border-2 border-red-200';
+    text.className='font-bold text-lg text-red-600'; text.textContent='✗ Pas tout à fait…';
+    detail.textContent=`La bonne réponse : ${correctAnswer}`;
+    detail.className='text-sm mt-1 text-red-500 font-semibold';
+    if(ttsEnabled) speak(`La bonne réponse est : ${correctAnswer}`);
   }
-
-  document.getElementById('q-score').textContent = quiz.score;
+  document.getElementById('q-score').textContent=quiz.score;
   fb.classList.remove('hidden');
   document.getElementById('q-next').classList.remove('hidden');
 }
 
-function nextQuestion() {
+function nextQuestion(){
   quiz.current++;
-  if (quiz.current >= quiz.questions.length) {
-    finishQuiz();
-  } else {
-    renderQuestion();
-  }
+  if(quiz.current>=quiz.questions.length) finishQuiz();
+  else renderQuestion();
 }
 
-function finishQuiz() {
-  const { score, questions, type, level } = quiz;
-  const total = questions.length;
-  const pct   = score / total;
-
-  // ── Sauvegarde locale ──────────────────────────────────────────────────
-  saveSession({
-    student_name:  user.name,
-    class_id:      user.classId,
-    exercise_type: type,
-    level,
-    score,
-    total
-  });
-
-  // ── Affichage résultat ─────────────────────────────────────────────────
-  document.getElementById('result-score').textContent = score;
-  document.getElementById('result-total').textContent = total;
-
-  if (pct >= 0.9) {
-    document.getElementById('result-emoji').textContent   = '🏆';
-    document.getElementById('result-message').textContent = 'Excellent ! Tu maîtrises très bien !';
-    document.getElementById('result-stars').textContent   = '⭐⭐⭐';
-  } else if (pct >= 0.7) {
-    document.getElementById('result-emoji').textContent   = '😊';
-    document.getElementById('result-message').textContent = 'Très bien ! Continue comme ça !';
-    document.getElementById('result-stars').textContent   = '⭐⭐';
-  } else if (pct >= 0.5) {
-    document.getElementById('result-emoji').textContent   = '💪';
-    document.getElementById('result-message').textContent = 'Bien ! Entraîne-toi encore.';
-    document.getElementById('result-stars').textContent   = '⭐';
-  } else {
-    document.getElementById('result-emoji').textContent   = '📚';
-    document.getElementById('result-message').textContent = 'Continue de pratiquer, tu vas progresser !';
-    document.getElementById('result-stars').textContent   = '';
-  }
-
+function finishQuiz(){
+  const {score,questions,type,level}=quiz;
+  const total=questions.length;
+  const pct=score/total;
+  saveSession({student_name:user.name,class_id:user.classId,exercise_type:type,level,score,total});
+  document.getElementById('result-score').textContent=score;
+  document.getElementById('result-total').textContent=total;
+  if(pct>=0.9){ document.getElementById('result-emoji').textContent='🏆'; document.getElementById('result-message').textContent='Excellent ! Tu maîtrises très bien !'; document.getElementById('result-stars').textContent='⭐⭐⭐'; }
+  else if(pct>=0.7){ document.getElementById('result-emoji').textContent='😊'; document.getElementById('result-message').textContent='Très bien ! Continue comme ça !'; document.getElementById('result-stars').textContent='⭐⭐'; }
+  else if(pct>=0.5){ document.getElementById('result-emoji').textContent='💪'; document.getElementById('result-message').textContent='Bien ! Entraîne-toi encore.'; document.getElementById('result-stars').textContent='⭐'; }
+  else { document.getElementById('result-emoji').textContent='📚'; document.getElementById('result-message').textContent='Continue de pratiquer, tu vas progresser !'; document.getElementById('result-stars').textContent=''; }
+  if(ttsEnabled){ const msgs=['Excellent !','Très bien !','Bien !','Continue de pratiquer !']; speak(msgs[pct>=0.9?0:pct>=0.7?1:pct>=0.5?2:3]); }
   show('result');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// EVENTS CLAVIER (LOGIN)
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// EVENTS LOGIN
+// ═══════════════════════════════════════════════════
+document.getElementById('input-code').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase(); });
+document.getElementById('input-name').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('input-code').focus(); });
+document.getElementById('input-code').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 
-document.getElementById('input-code').addEventListener('input', e => {
-  e.target.value = e.target.value.toUpperCase();
-});
-document.getElementById('input-name').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('input-code').focus();
-});
-document.getElementById('input-code').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DÉMARRAGE — reconnexion automatique si session sauvegardée
-// ═══════════════════════════════════════════════════════════════════════════
-
-(function init() {
-  const saved = loadUser();
-  if (saved) {
-    user = saved;
-    showMenu();
-  } else {
-    show('login');
-  }
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+(function init(){
+  const saved=loadUser();
+  if(saved){ user=saved; showMenu(); } else { show('login'); }
 })();
 </script>
 </body>
