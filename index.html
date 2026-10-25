@@ -1202,6 +1202,11 @@ function showFeedback(correct,correctAnswer){
 }
 
 function nextQuestion(){
+  if(!quiz || quiz.current>=quiz.questions.length) return;
+  const nextBtn=document.getElementById('q-next');
+  // Une réponse doit être validée avant de passer à la suite.
+  if(nextBtn.classList.contains('hidden')) return;
+  nextBtn.classList.add('hidden');
   quiz.current++;
   if(quiz.current>=quiz.questions.length) finishQuiz();
   else renderQuestion();
