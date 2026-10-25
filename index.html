@@ -34,7 +34,6 @@
     .tts-btn:hover { background: rgba(0,0,0,.06); }
     /* Pictogramme consigne */
     .picto-consigne { font-size: 2rem; display: block; margin-bottom: 4px; }
-
     /* Identité Atelier Maths — couche graphique uniquement */
     :root { --atelier-navy:#0b315b; --atelier-blue:#0878cf; --atelier-bg:#edf5fc; --atelier-surface:#fff; --atelier-text:#122c4a; --atelier-muted:#64748b; --atelier-border:#d9e6f3; }
     body { background:var(--atelier-bg)!important; color:var(--atelier-text); transition:background .2s,color .2s; }
@@ -78,7 +77,6 @@
     <span style="font-size:.78rem;opacity:.85" title="Lien disponible après publication du portail">Portail bientôt</span>
   </nav>
 </header>
-
 
 <!-- ── ÉCRAN 1 : Connexion ─────────────────────────────────────────────── -->
 <div id="screen-login" class="min-h-screen flex items-center justify-center p-4">
@@ -374,6 +372,38 @@ function maybeSpeak(text) {
 const CLASS_CODES = { 'UPE2A': 'UPE2A', 'DIDEROT': 'Lycée Denis Diderot', 'MATHS1': 'Groupe 1', 'MATHS2': 'Groupe 2' };
 const LS_USER = 'upe2a_user';
 const LS_SESSIONS = 'upe2a_sessions';
+const LS_UNLOCKS = 'upe2a_unlocks';
+const LS_GUEST = 'upe2a_guest';
+function newGuest(){
+  const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return {name:'Invité',classId:'INVITE',className:'Parcours libre',guestId:id};
+}
+function storeGuest(g){
+  try { localStorage.setItem(LS_GUEST,JSON.stringify(g)); }
+  catch(e){ console.warn('Identité invité non enregistrée :',e); }
+  return g;
+}
+function loadGuest(){
+  try {
+    const g=JSON.parse(localStorage.getItem(LS_GUEST));
+    if(g && g.classId==='INVITE' && typeof g.guestId==='string' && g.guestId) return g;
+  } catch(e){ console.warn('Identité invité non récupérée :',e); }
+  return storeGuest(newGuest());
+}
+function progressionKey(u){ return u.classId==='INVITE' ? `guest:${u.guestId}` : `student:${u.classId}:${u.name}`; }
+function getUnlocks(){ try { return JSON.parse(localStorage.getItem(LS_UNLOCKS)) || {}; } catch { return {}; } }
+function earnUnlock(type,level){
+  const sequence=LEVEL_SEQUENCES[type];
+  const next=sequence && sequence[sequence.indexOf(String(level))+1];
+  if(!next)return;
+  try {
+    const all=getUnlocks(), key=progressionKey(user);
+    if(!all[key])all[key]={};
+    if(!all[key][type])all[key][type]=[];
+    if(!all[key][type].includes(next))all[key][type].push(next);
+    localStorage.setItem(LS_UNLOCKS,JSON.stringify(all));
+  } catch(e){ console.warn('Progression non enregistrée :',e); }
+}
 
 function saveUser(u) { localStorage.setItem(LS_USER, JSON.stringify(u)); }
 function loadUser() { try { return JSON.parse(localStorage.getItem(LS_USER)); } catch { return null; } }
@@ -382,10 +412,11 @@ function getSessions() { try { return JSON.parse(localStorage.getItem(LS_SESSION
 function saveSession(session) {
   const sessions = getSessions();
   sessions.unshift({ ...session, completed_at: new Date().toISOString() });
-  localStorage.setItem(LS_SESSIONS, JSON.stringify(sessions.slice(0, 200)));
+  try { localStorage.setItem(LS_SESSIONS, JSON.stringify(sessions.slice(0, 200))); }
+  catch(e){ console.warn('Historique non enregistré :',e); }
 }
 function getStudentSessions(name, classId) {
-  return getSessions().filter(s => s.student_name === name && s.class_id === classId);
+  return getSessions().filter(s => s.student_name === name && s.class_id === classId && (classId !== 'INVITE' || (user && s.guest_id === user.guestId)));
 }
 
 // ═══════════════════════════════════════════════════
@@ -518,6 +549,7 @@ function showNombresLevels() {
   document.getElementById('levels-title').textContent='🔢 Les nombres en français';
   const paliers=[{max:10,label:'Palier 1 — 1 à 10',sub:'10 nombres de base'},{max:20,label:'Palier 2 — 1 à 20',sub:'20 nombres'},{max:100,label:'Palier 3 — 1 à 100',sub:'Dizaines et unités'},{max:1000,label:'Palier 4 — 1 à 1000',sub:'Centaines et millier'}];
   document.getElementById('levels-list').innerHTML=paliers.map(p=>`<button onclick="startNombresQuiz(${p.max})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-blue-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${p.label}</p><p class="text-sm text-gray-400 mt-0.5">${p.sub}</p></div><span class="text-blue-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('nombres',['10','20','100','1000']);
   show('levels');
 }
 function showTablesLevels() {
@@ -536,16 +568,56 @@ function selectTable(n) {
     btn.classList.toggle('text-gray-700',t!==n);
   });
 }
+
+/* Progression UPE2A : 80 % au niveau précédent, par élève et par activité. */
+const LEVEL_SEQUENCES = {
+ additions:['1','2','3','4'],soustractions:['1','2','3','4'],
+ nombres:['10','20','100','1000'],magic:['1','2','3','4'],
+ heure:['1','2','3'],geo:['1','2','3'],mesures:['1','2','3','4'],monnaie:['1','2','3']
+};
+function levelUnlocked(type,level) {
+  const sequence=LEVEL_SEQUENCES[type];
+  if(!sequence)return true;
+  const index=sequence.indexOf(String(level));
+  if(index<=0)return true;
+  const previous=sequence[index-1];
+  if((getUnlocks()[progressionKey(user)]?.[type] || []).includes(String(level)))return true;
+  return getStudentSessions(user.name,user.classId).some(s=>
+    s.exercise_type===type && String(s.level)===previous &&
+    Number(s.total)>0 && Number(s.score)/Number(s.total)>=0.8);
+}
+function requireUnlocked(type,level){
+  if(levelUnlocked(type,level))return true;
+  alert('🔒 Obtiens au moins 80 % au niveau précédent pour débloquer celui-ci.');
+  return false;
+}
+function updateLevelLocks(type,levels) {
+  const buttons=document.querySelectorAll('#levels-list button');
+  levels.forEach((level,i)=>{
+    const button=buttons[i];
+    if(!button)return;
+    const unlocked=levelUnlocked(type,level);
+    if(!unlocked){
+      button.disabled=true;
+      button.classList.add('opacity-50','cursor-not-allowed');
+      button.title='Obtiens au moins 80 % au niveau précédent';
+      button.insertAdjacentHTML('beforeend','<span aria-hidden="true"> 🔒</span>');
+    }
+  });
+}
+
 function showAdditionsLevels() {
   document.getElementById('levels-title').textContent='➕ Additions';
   const niveaux=[{id:1,label:'Niveau 1 — résultat ≤ 10',sub:"QCM"},{id:2,label:'Niveau 2 — résultat ≤ 20',sub:"QCM"},{id:3,label:'Niveau 3 — résultat ≤ 50',sub:'Saisie chiffres'},{id:4,label:'Niveau 4 — résultat ≤ 100',sub:'Saisie chiffres'}];
   document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startAdditionsQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-orange-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-orange-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('additions',['1','2','3','4']);
   show('levels');
 }
 function showSoustractionsLevels() {
   document.getElementById('levels-title').textContent='➖ Soustractions';
   const niveaux=[{id:1,label:'Niveau 1 — résultat ≤ 10',sub:"QCM"},{id:2,label:'Niveau 2 — résultat ≤ 20',sub:"QCM"},{id:3,label:'Niveau 3 — résultat ≤ 50',sub:'Saisie chiffres'},{id:4,label:'Niveau 4 — résultat ≤ 100',sub:'Saisie chiffres'}];
   document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startSoustractionsQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-red-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-red-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('soustractions',['1','2','3','4']);
   show('levels');
 }
 
@@ -561,9 +633,11 @@ function showCarresMagiquesLevels() {
   document.getElementById('levels-title').textContent='🔲 Carrés magiques';
   const niveaux=[{id:1,label:'Niveau 1 — Facile',sub:'3 cases à trouver'},{id:2,label:'Niveau 2 — Moyen',sub:'5 cases à trouver'},{id:3,label:'Niveau 3 — Difficile',sub:'7 cases à trouver'},{id:4,label:'Niveau 4 — Expert',sub:'8 cases à trouver'}];
   document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startCarreMagique(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-purple-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-purple-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('magic',['1','2','3','4']);
   show('levels');
 }
 function startCarreMagique(level) {
+  if(!requireUnlocked('magic',level))return;
   currentMagicLevel=level;
   currentMagicSquare=MAGIC_SQ_LIST[randInt(0,MAGIC_SQ_LIST.length-1)].map(r=>[...r]);
   const nbHidden=MAGIC_HIDDEN[level];
@@ -594,7 +668,7 @@ function checkCarreMagique() {
   }
   const fb=document.getElementById('magic-feedback');
   fb.classList.remove('hidden','text-green-600','text-red-600');
-  if(allCorrect){ fb.textContent="🎉 Bravo, c'est correct !"; fb.classList.add('text-green-600'); document.getElementById('magic-check-btn').disabled=true; document.getElementById('magic-check-btn').classList.add('opacity-50'); saveSession({student_name:user.name,class_id:user.classId,exercise_type:'magic',level:currentMagicLevel.toString(),score:1,total:1}); }
+  if(allCorrect){ fb.textContent="🎉 Bravo, c'est correct !"; fb.classList.add('text-green-600'); document.getElementById('magic-check-btn').disabled=true; document.getElementById('magic-check-btn').classList.add('opacity-50'); earnUnlock('magic',currentMagicLevel); saveSession({student_name:user.name,class_id:user.classId,guest_id:user.guestId || null,exercise_type:'magic',level:currentMagicLevel.toString(),score:1,total:1}); if(user.classId !== 'INVITE' && window.AM && window.AM.currentEleve()) window.AM.sendSession({exercice:`UPE2A | magic | Niveau ${currentMagicLevel}`,score:1,nb_questions:1,duree_totale_ms:null,reponses:[]}); }
   else { fb.textContent="❌ Pas tout à fait, réessaie !"; fb.classList.add('text-red-600'); }
 }
 
@@ -663,6 +737,7 @@ function showHeureLevels() {
     {id:3,label:'Niveau 3 — Minutes',sub:'Toutes les 5 minutes, heure numérique → analogique'},
   ];
   document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startHeureQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-yellow-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-yellow-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('heure',['1','2','3']);
   show('levels');
 }
 
@@ -725,6 +800,7 @@ function makeHeureQuestion(level) {
 }
 
 function startHeureQuiz(level) {
+  if(!requireUnlocked('heure',level))return;
   currentHeureLevel=level;
   const questions=Array.from({length:8},()=>makeHeureQuestion(level));
   lastQuizConfig={type:'heure',level:level.toString()};
@@ -760,6 +836,7 @@ function showMonnaieLevels() {
     {id:3,label:'Niveau 3 — Mélange',sub:'Euros et centimes, rendre la monnaie'},
   ];
   document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startMonnaieQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-emerald-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-emerald-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('monnaie',['1','2','3']);
   show('levels');
 }
 
@@ -789,6 +866,7 @@ function makeMonnaieQuestion(level) {
 }
 
 function startMonnaieQuiz(level) {
+  if(!requireUnlocked('monnaie',level))return;
   lastQuizConfig={type:'monnaie',level:level.toString()};
   const questions=Array.from({length:6},()=>makeMonnaieQuestion(level));
   beginQuiz(questions,'monnaie',level.toString());
@@ -857,6 +935,7 @@ function showGeoLevels(){
     {id:3,label:'Niveau 3 — Propriétés',sub:'Identifier les caractéristiques des formes'},
   ];
   document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startGeoQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-pink-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-pink-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('geo',['1','2','3']);
   show('levels');
 }
 
@@ -885,6 +964,7 @@ function makeGeoQuestion(level) {
 }
 
 function startGeoQuiz(level){
+  if(!requireUnlocked('geo',level))return;
   currentGeoLevel=level;
   const questions=Array.from({length:8},()=>makeGeoQuestion(level));
   lastQuizConfig={type:'geo',level:level.toString()};
@@ -933,6 +1013,7 @@ function showMesuresLevels(){
     {id:4,label:'Niveau 4 — Températures',sub:'°C — lire et comprendre'},
   ];
   document.getElementById('levels-list').innerHTML=niveaux.map(n=>`<button onclick="startMesuresQuiz(${n.id})" class="w-full bg-white rounded-2xl shadow p-5 text-left card-hover border-2 border-transparent hover:border-cyan-300"><div class="flex items-center justify-between"><div><p class="font-bold text-gray-800 text-lg">${n.label}</p><p class="text-sm text-gray-400 mt-0.5">${n.sub}</p></div><span class="text-cyan-400 text-2xl">›</span></div></button>`).join('');
+  updateLevelLocks('mesures',['1','2','3','4']);
   show('levels');
 }
 
@@ -946,6 +1027,7 @@ function makeMesuresQuestion(level){
 }
 
 function startMesuresQuiz(level){
+  if(!requireUnlocked('mesures',level))return;
   currentMesureLevel=level;
   const questions=Array.from({length:8},()=>makeMesuresQuestion(level));
   lastQuizConfig={type:'mesures',level:level.toString()};
@@ -957,6 +1039,7 @@ function startMesuresQuiz(level){
 // ═══════════════════════════════════════════════════
 const NB_QUESTIONS=10;
 function startNombresQuiz(max){
+  if(!requireUnlocked('nombres',max))return;
   const pool=shuffle(Array.from({length:max},(_,i)=>i+1)).slice(0,NB_QUESTIONS);
   const questions=pool.map(n=>makeNombresQuestion(max,n));
   lastQuizConfig={type:'nombres',level:max.toString()};
@@ -969,11 +1052,13 @@ function startTablesQuiz(tableNum,mode){
   beginQuiz(questions,'tables',`${tableNum}_${mode}`);
 }
 function startAdditionsQuiz(level){
+  if(!requireUnlocked('additions',level))return;
   const questions=Array.from({length:NB_QUESTIONS},()=>makeAdditionQuestion(level));
   lastQuizConfig={type:'additions',level:level.toString()};
   beginQuiz(questions,'additions',level.toString());
 }
 function startSoustractionsQuiz(level){
+  if(!requireUnlocked('soustractions',level))return;
   const questions=Array.from({length:NB_QUESTIONS},()=>makeSoustractionQuestion(level));
   lastQuizConfig={type:'soustractions',level:level.toString()};
   beginQuiz(questions,'soustractions',level.toString());
@@ -1126,7 +1211,9 @@ function finishQuiz(){
   const {score,questions,type,level}=quiz;
   const total=questions.length;
   const pct=score/total;
-  saveSession({student_name:user.name,class_id:user.classId,exercise_type:type,level,score,total});
+  if(total>0 && pct>=0.8)earnUnlock(type,level);
+  saveSession({student_name:user.name,class_id:user.classId,guest_id:user.guestId || null,exercise_type:type,level,score,total});
+  if(user.classId !== 'INVITE' && window.AM && window.AM.currentEleve()) window.AM.sendSession({exercice:`UPE2A | ${type} | Niveau ${level}`,score,nb_questions:total,duree_totale_ms:null,reponses:[]});
   document.getElementById('result-score').textContent=score;
   document.getElementById('result-total').textContent=total;
   if(pct>=0.9){ document.getElementById('result-emoji').textContent='🏆'; document.getElementById('result-message').textContent='Excellent ! Tu maîtrises très bien !'; document.getElementById('result-stars').textContent='⭐⭐⭐'; }
@@ -1147,10 +1234,7 @@ document.getElementById('input-code').addEventListener('keydown',e=>{ if(e.key==
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-(function init(){
-  const saved=loadUser();
-  if(saved){ user=saved; showMenu(); } else { show('login'); }
-})();
+(function init(){ const saved=loadUser(); if(saved){user=saved;showMenu();} else {show('login');} })();
 </script>
 <script>
 (function(){try{const saved=localStorage.getItem('atelier-maths-theme');const theme=saved|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.classList.toggle('atelier-dark',theme==='dark');}catch(e){}})();
