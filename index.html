@@ -688,7 +688,7 @@ function makeNombresQuestion(max,correct) {
   while(nums.size<4&&attempts<50){attempts++;const nearby=Math.random()<0.5;const n=nearby?correct+randInt(1,5)*(Math.random()<0.5?1:-1):randInt(1,max);if(n>=1&&n<=max&&n!==correct)nums.add(n);}
   while(nums.size<4){const n=randInt(1,max);if(n!==correct)nums.add(n);}
   const choices=shuffle([...nums].map(n=>({display:toFrench(n),isCorrect:n===correct})));
-  return {instruction:'Quel est le nom de ce nombre ?',picto:'👁️',question:correct.toString(),qSize:'text-7xl',type:'qcm',choices,correctAnswer:toFrench(correct),ttsText:`Quel est le nom du nombre ${correct} ?`};
+  return {instruction:'Quel est le nom de ce nombre ?',picto:'👁️',question:correct.toString(),qSize:'text-7xl',type:'qcm',choices,correctAnswer:toFrench(correct),ttsText:'Quel est le nom de ce nombre ?'};
 }
 function makeTableDistractors(correct){
   const pool=new Set();
