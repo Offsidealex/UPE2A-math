@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maths UPE2A – Lycée Denis Diderot</title>
+  <title>UPE2A | Atelier Maths</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -34,16 +34,52 @@
     .tts-btn:hover { background: rgba(0,0,0,.06); }
     /* Pictogramme consigne */
     .picto-consigne { font-size: 2rem; display: block; margin-bottom: 4px; }
+
+    /* Identité Atelier Maths — couche graphique uniquement */
+    :root { --atelier-navy:#0b315b; --atelier-blue:#0878cf; --atelier-bg:#edf5fc; --atelier-surface:#fff; --atelier-text:#122c4a; --atelier-muted:#64748b; --atelier-border:#d9e6f3; }
+    body { background:var(--atelier-bg)!important; color:var(--atelier-text); transition:background .2s,color .2s; }
+    .atelier-header { background:var(--atelier-navy);color:#fff; padding:15px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 5px 22px rgba(4,32,67,.12); }
+    .atelier-brand { display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;font-weight:800;font-size:1.15rem;letter-spacing:-.02em; }
+    .atelier-brand svg {width:42px;height:42px;flex:none;}
+    .atelier-brand small {display:block;font-size:.72rem;font-weight:500;opacity:.83;letter-spacing:0;}
+    .atelier-actions {display:flex;gap:10px;align-items:center;}
+    .atelier-actions button,.atelier-actions a {border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:12px;padding:9px 12px;background:rgba(255,255,255,.10);font-weight:600;font-size:.85rem;text-decoration:none;cursor:pointer;}
+    .atelier-actions button:hover,.atelier-actions a:hover {background:rgba(255,255,255,.2);}
+    #screen-login,#screen-menu,#screen-levels,#screen-quiz,#screen-result,#screen-magic,#screen-heure,#screen-geo,#screen-mesures {min-height:calc(100vh - 76px);}
+    #screen-login > div,.bg-white {border:1px solid var(--atelier-border);}
+    .card-hover {border-radius:20px;box-shadow:0 4px 16px rgba(9,49,91,.055);}
+    .card-hover:hover {box-shadow:0 12px 28px rgba(9,49,91,.13);}
+    #screen-login h1 {color:var(--atelier-navy);}
+    #screen-login button[onclick="doLogin()"] {background:var(--atelier-blue)!important;}
+    .atelier-dark {--atelier-bg:#101e30;--atelier-surface:#192b42;--atelier-text:#e7eef9;--atelier-muted:#a9bdd4;--atelier-border:#314a67;}
+    .atelier-dark .bg-white {background-color:var(--atelier-surface)!important;color:var(--atelier-text)!important;}
+    .atelier-dark .text-gray-800,.atelier-dark .text-gray-700 {color:var(--atelier-text)!important;}
+    .atelier-dark .text-gray-600,.atelier-dark .text-gray-500,.atelier-dark .text-gray-400 {color:var(--atelier-muted)!important;}
+    .atelier-dark input {background:#14243a;color:#fff;border-color:#47607d;}
+    .atelier-dark .bg-blue-50,.atelier-dark .bg-green-50,.atelier-dark .bg-orange-50,.atelier-dark .bg-red-50,.atelier-dark .bg-purple-50,.atelier-dark .bg-yellow-50,.atelier-dark .bg-indigo-50 {background-color:#213751!important;}
+    .atelier-dark .card-hover {border-color:#375373!important;}
+    @media(max-width:550px){.atelier-header{padding:12px}.atelier-brand{font-size:1rem}.atelier-brand small{font-size:.65rem}.atelier-actions a{font-size:.75rem;padding:8px}.atelier-actions button{padding:8px}}
   </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+<body class="min-h-screen">
+<header class="atelier-header">
+  <a class="atelier-brand" href="https://offsidealex.github.io/UPE2A-math/" aria-label="Accueil UPE2A">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0878cf"/><circle cx="32" cy="32" r="23" fill="none" stroke="white" stroke-width="3"/><ellipse cx="32" cy="32" rx="11" ry="23" fill="none" stroke="white" stroke-width="2.5"/><path d="M10 32h44M15 20h34M15 44h34" stroke="white" stroke-width="2.5" fill="none"/><path d="M23 15l8 3-1 8 7 3-3 7-9-3-5-9zm14 21 9-2-1 9-7 6-5-4z" fill="white"/></svg>
+    <span>Atelier Maths <small>UPE2A · Mathématiques</small></span>
+  </a>
+  <nav class="atelier-actions" aria-label="Navigation">
+    <button type="button" id="atelier-theme-toggle" onclick="atelierToggleTheme()" aria-label="Changer le thème">🌙</button>
+    <a href="https://offsidealex.github.io/Atelier-Maths/" title="Retour au portail Atelier Maths">← Portail</a>
+  </nav>
+</header>
+
 
 <!-- ── ÉCRAN 1 : Connexion ─────────────────────────────────────────────── -->
 <div id="screen-login" class="min-h-screen flex items-center justify-center p-4">
   <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-sm space-y-6">
     <div class="text-center">
-      <div class="text-6xl mb-3">🏫</div>
-      <h1 class="text-2xl font-bold text-gray-800">Maths UPE2A</h1>
+      <div class="text-5xl mb-3">🌍</div>
+      <h1 class="text-2xl font-bold text-gray-800">Mathématiques UPE2A</h1>
       <p class="text-gray-400 text-sm mt-1">Lycée Denis Diderot</p>
     </div>
     <div class="space-y-4">
@@ -1109,6 +1145,11 @@ document.getElementById('input-code').addEventListener('keydown',e=>{ if(e.key==
   const saved=loadUser();
   if(saved){ user=saved; showMenu(); } else { show('login'); }
 })();
+</script>
+<script>
+(function(){try{const saved=localStorage.getItem('atelier-maths-theme');const theme=saved|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.classList.toggle('atelier-dark',theme==='dark');}catch(e){}})();
+function atelierToggleTheme(){const dark=!document.documentElement.classList.contains('atelier-dark');document.documentElement.classList.toggle('atelier-dark',dark);try{localStorage.setItem('atelier-maths-theme',dark?'dark':'light')}catch(e){}document.getElementById('atelier-theme-toggle').textContent=dark?'☀️':'🌙';}
+document.getElementById('atelier-theme-toggle').textContent=document.documentElement.classList.contains('atelier-dark')?'☀️':'🌙';
 </script>
 </body>
 </html>
