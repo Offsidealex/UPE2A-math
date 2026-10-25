@@ -953,14 +953,14 @@ function makeGeoQuestion(level) {
     const pool=[...new Set([0,3,4,5,6,8].filter(x=>x.toString()!==correct))];
     const choices=shuffle([{display:correct,isCorrect:true},...shuffle(pool).slice(0,3).map(d=>({display:d.toString(),isCorrect:false}))]);
     const q=shape.sides===0?'Cette forme a-t-elle des côtés ?':'Combien de côtés a cette forme ?';
-    const tts=shape.sides===0?'Cette forme a-t-elle des côtés ?':`Combien de côtés a ce ${shape.name} ?`;
+    const tts=shape.sides===0?'Cette forme a-t-elle des côtés ?':'Combien de côtés a cette forme ?';
     return {instruction:q,picto:'📐',question:'',qSize:'',type:'qcm_geo',visualHTML:svgWrap,choices,correctAnswer:correct,ttsText:tts};
   }
   // Niveau 3 : propriétés
   const correctDescr=shape.descr;
   const wrongDescrs=shuffle(SHAPES.filter(s=>s.id!==shape.id).map(s=>s.descr)).slice(0,3);
   const choices=shuffle([{display:correctDescr,isCorrect:true},...wrongDescrs.map(d=>({display:d,isCorrect:false}))]);
-  return {instruction:'Quelle est la bonne description ?',picto:'📐',question:`C'est un ${shape.name}.`,qSize:'text-2xl',type:'qcm_geo',visualHTML:svgWrap,choices,correctAnswer:correctDescr,ttsText:`Quelle est la bonne description du ${shape.name} ?`};
+  return {instruction:'Quelle est la bonne description ?',picto:'📐',question:`C'est un ${shape.name}.`,qSize:'text-2xl',type:'qcm_geo',visualHTML:svgWrap,choices,correctAnswer:correctDescr,ttsText:'Quelle est la bonne description de cette forme ?'};
 }
 
 function startGeoQuiz(level){
