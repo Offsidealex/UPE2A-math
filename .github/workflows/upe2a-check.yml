@@ -1,0 +1,16 @@
+name: UPE2A verification
+on:
+  push:
+    branches: [master, feature/sync-upe2a-audited-levels]
+  pull_request:
+    branches: [master]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test UPE2A
+        run: node --test tests/upe2a-smoke.test.cjs
