@@ -731,7 +731,7 @@ function checkCarreMagique() {
   }
   const fb=document.getElementById('magic-feedback');
   fb.classList.remove('hidden','text-green-600','text-red-600');
-  if(allCorrect){ fb.textContent="🎉 Bravo, c'est correct !"; fb.classList.add('text-green-600'); document.getElementById('magic-check-btn').disabled=true; document.getElementById('magic-check-btn').classList.add('opacity-50'); earnUnlock('magic',currentMagicLevel); saveSession({student_name:user.name,class_id:user.classId,guest_id:user.guestId || null,exercise_type:'magic',level:currentMagicLevel.toString(),score:1,total:1}); // Les résultats sont sauvegardés par UPEAuth.saveResult (pas en double). }
+  if(allCorrect){ fb.textContent="🎉 Bravo, c'est correct !"; fb.classList.add('text-green-600'); document.getElementById('magic-check-btn').disabled=true; document.getElementById('magic-check-btn').classList.add('opacity-50'); earnUnlock('magic',currentMagicLevel); saveSession({student_name:user.name,class_id:user.classId,guest_id:user.guestId || null,exercise_type:'magic',level:currentMagicLevel.toString(),score:1,total:1}); }
   else { fb.textContent="❌ Pas tout à fait, réessaie !"; fb.classList.add('text-red-600'); }
 }
 
