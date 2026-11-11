@@ -409,16 +409,34 @@ function saveUser(u) { localStorage.setItem(LS_USER, JSON.stringify(u)); }
 function loadUser() { try { return JSON.parse(localStorage.getItem(LS_USER)); } catch { return null; } }
 function clearUser() { localStorage.removeItem(LS_USER); }
 function getSessions() { try { return JSON.parse(localStorage.getItem(LS_SESSIONS)) || []; } catch { return []; } }
+function pendingKey(){return 'upe2a_pending_'+(user?.eleveId||'anonymous');}
+function readPending(){try{return JSON.parse(localStorage.getItem(pendingKey())||'[]');}catch{return [];}}
+async function flushPending(){
+ if(!user?.eleveId)return;
+ const key=pendingKey();
+ let queue=readPending();
+ while(queue.length){
+  await UPEAuth.saveResult(queue[0]);
+  queue.shift();
+  localStorage.setItem(key,JSON.stringify(queue));
+ }
+}
 async function saveSession(session) {
-  // Sauvegarde locale de secours. Une erreur réseau ne doit pas faire perdre la séance.
-  const sessions=getSessions();
-  const saved={...session,completed_at:new Date().toISOString()};
-  sessions.unshift(saved);
-  try{localStorage.setItem(LS_SESSIONS,JSON.stringify(sessions.slice(0,1200)));}catch(e){}
-  if(user?.eleveId){
-    try{await UPEAuth.saveResult(session);await syncSessions();}
-    catch(e){console.warn('Séance conservée localement, non synchronisée :',e);alert('Connexion interrompue : cette séance est conservée sur cet appareil, mais pas encore dans Supabase.');}
-  }
+ const saved={...session,completed_at:new Date().toISOString()};
+ const sessions=getSessions();
+ sessions.unshift(saved);
+ try{localStorage.setItem(LS_SESSIONS,JSON.stringify(sessions.slice(0,1200)));}catch(e){}
+ if(!user?.eleveId)return;
+ try{
+  const queue=readPending();
+  queue.push(saved);
+  localStorage.setItem(pendingKey(),JSON.stringify(queue));
+  await syncSessions();
+  if(readPending().length)throw new Error('Synchronisation incomplète');
+ }catch(e){
+  console.warn('Séance en attente de synchronisation :',e);
+  alert('Séance enregistrée sur cet appareil. Elle sera synchronisée à la prochaine connexion.');
+ }
 }
 function getStudentSessions(name,classId){
  return getSessions().filter(s=>s.class_id===classId&&s.student_name===name);
@@ -530,12 +548,15 @@ function logout(){
 async function syncSessions(){
  if(syncing||!user||!UPEAuth.loadEleve())return;
  syncing=true;
+ const eleveId=user.eleveId;
  try{
+  try{await flushPending();}catch(e){console.warn('Envoi différé des résultats UPE2A',e);}
   const rows=await UPEAuth.getSessions();
-  if(!user||user.eleveId!==UPEAuth.loadEleve()?.id)return;
+  if(!user||user.eleveId!==eleveId||eleveId!==UPEAuth.loadEleve()?.id)return;
+  const pending=readPending();
   const local=getSessions().filter(s=>s.class_id!=='SUPABASE');
-  localStorage.setItem(LS_SESSIONS,JSON.stringify([...rows,...local].slice(0,1200)));
-  if(document.getElementById('screen-menu')&&!document.getElementById('screen-menu').classList.contains('hidden'))buildScoreSummary();
+  localStorage.setItem(LS_SESSIONS,JSON.stringify([...pending,...rows,...local].slice(0,1200)));
+  if(!document.getElementById('screen-menu').classList.contains('hidden'))buildScoreSummary();
  }catch(err){console.warn('Synchronisation UPE2A indisponible',err);}
  finally{syncing=false;}
 }
