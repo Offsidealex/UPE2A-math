@@ -46,10 +46,12 @@ function boot({remote=[], failSave=false}={}) {
  return {run:s=>vm.runInContext(s,context),el,storage,login,auth,saved};
 }
 test('login uses shared Supabase account and unlocks at 80 percent',async()=>{
- const a=boot();assert.equal(a.el('screen-login').classList.contains('hidden'),false);
+ const a=boot();assert.equal(a.el('screen-login').classList.contains('hidden'),true);
+ a.run('openLogin()');assert.equal(a.el('screen-login').classList.contains('hidden'),false);
  await a.login();
  assert.equal(a.run('user.name'),'Ana');
  assert.equal(a.el('screen-menu').classList.contains('hidden'),false);
+ assert.equal(a.el('screen-login').classList.contains('hidden'),true);
  assert.equal(a.run("levelUnlocked('additions',2)"),false);
  a.run("quiz={score:8,questions:Array(10).fill({}),type:'additions',level:'1'};finishQuiz()");
  await new Promise(resolve=>setImmediate(resolve));
@@ -65,6 +67,24 @@ test('saved progress is loaded from Supabase on another device',async()=>{
  const a=boot({remote:[{exercise_type:'additions',level:'1',score:8,total:10,completed_at:'2026-11-11T13:00:00Z'}]});
  await a.login();
  assert.equal(a.run("levelUnlocked('additions',2)"),true);
+});
+test('guest can use exercises and open/close connection dialog',()=>{
+ const a=boot();
+ assert.equal(a.run('user.classId'),'INVITE');
+ assert.equal(a.el('screen-menu').classList.contains('hidden'),false);
+ a.run('openLogin()');
+ assert.equal(a.el('screen-login').classList.contains('hidden'),false);
+ a.run('closeLogin()');
+ assert.equal(a.el('screen-login').classList.contains('hidden'),true);
+ a.run("quiz={score:8,questions:Array(10).fill({}),type:'additions',level:'1'};finishQuiz()");
+ assert.equal(a.run("levelUnlocked('additions',2)"),true);
+});
+test('logout returns to independent guest profile',async()=>{
+ const a=boot();await a.login();
+ a.run('logout()');
+ assert.equal(a.run('user.classId'),'INVITE');
+ assert.equal(a.el('header-login-btn').classList.contains('hidden'),false);
+ assert.equal(a.el('header-logout-btn').classList.contains('hidden'),true);
 });
 test('design and accessibility',()=>{
  assert.match(html,/atelier-header/);assert.match(html,/atelierToggleTheme/);
