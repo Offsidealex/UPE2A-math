@@ -421,7 +421,7 @@ async function flushPending(){
   localStorage.setItem(key,JSON.stringify(queue));
  }
 }
-async async function saveSession(session) {
+async function saveSession(session) {
  const saved={...session,completed_at:new Date().toISOString()};
  const sessions=getSessions();
  sessions.unshift(saved);
