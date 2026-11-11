@@ -5,30 +5,66 @@ const vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8');
 const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>!/\bsrc\s*=/.test(m[1])).map(m=>m[2]);
 test('scripts syntactically valid',()=>{assert.equal(scripts.length,2);scripts.forEach((s,i)=>assert.doesNotThrow(()=>new vm.Script(s,{filename:'inline-'+i})));});
-function boot(){
+function boot({remote=[], failSave=false}={}) {
  const storage=new Map(),elements=new Map();
- function el(id){if(!elements.has(id)){const tag=html.match(new RegExp('<[^>]+id="'+id+'"[^>]*>'))?.[0]||'';const set=new Set((tag.match(/class="([^"]*)"/)?.[1]||'').split(/\s+/).filter(Boolean));elements.set(id,{id,value:'',textContent:'',disabled:false,style:{},classList:{add:(...v)=>v.forEach(x=>set.add(x)),remove:(...v)=>v.forEach(x=>set.delete(x)),contains:x=>set.has(x),toggle:(x,v)=>{if(v===undefined)v=!set.has(x);v?set.add(x):set.delete(x);return v;}},addEventListener(){},set innerHTML(x){this._html=x;this.buttons=[...x.matchAll(/<button\b/g)].map(()=>({disabled:false,classList:{add(){},remove(){}}}));},get innerHTML(){return this._html||'';}});}return elements.get(id);}
- for(const m of html.matchAll(/\bid="([^"]+)"/g))el(m[1]);
+ const student={id:'pupil-1',prenom:'Ana'},saved=[];
+ let loggedIn=false;
+ function el(id){
+  if(!elements.has(id)){
+   const tag=html.match(new RegExp('<[^>]+id="'+id+'"[^>]*>'))?.[0]||'';
+   const set=new Set((tag.match(/class="([^"]*)"/)?.[1]||'').split(/\\s+/).filter(Boolean));
+   elements.set(id,{id,value:'',textContent:'',disabled:false,style:{},
+    classList:{add:(...v)=>v.forEach(x=>set.add(x)),remove:(...v)=>v.forEach(x=>set.delete(x)),
+      contains:x=>set.has(x),toggle:(x,v)=>{if(v===undefined)v=!set.has(x);v?set.add(x):set.delete(x);return v;}},
+    addEventListener(){},set innerHTML(x){this._html=x;this.buttons=[...x.matchAll(/<button\\b/g)].map(()=>({disabled:false,classList:{add(){},remove(){}}}));},
+    get innerHTML(){return this._html||'';}});
+  }
+  return elements.get(id);
+ }
+ for(const m of html.matchAll(/\\bid="([^"]+)"/g))el(m[1]);
  const localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)};
- const document={getElementById:el,documentElement:{classList:{contains(){return false},toggle(){}}},querySelectorAll:()=>el('levels-list').buttons||[]};
- const ctx={document,localStorage,window:null,console,Math,Date,alert:()=>{},matchMedia:()=>({matches:false})};ctx.window=ctx;
+ const auth={
+  loadEleve:()=>loggedIn?student:null,
+  async studentAuth(action,pseudo,classe,password){
+   assert.ok(['login','register'].includes(action));
+   assert.equal(pseudo,'Ana');assert.equal(classe,'UPE2A');assert.equal(password,'password123');
+   loggedIn=true;
+  },
+  async getSessions(){return [...remote,...saved].map(s=>({...s,student_name:'Ana',class_id:'SUPABASE'}));},
+  async saveResult(row){if(failSave)throw new Error('network');saved.push(row);return 'saved';},
+  logout(){loggedIn=false;}
+ };
+ const document={getElementById:el,documentElement:{classList:{contains(){return false},toggle(){}}},querySelectorAll:()=>el('levels-list').buttons||[],addEventListener(){}};
+ const ctx={document,localStorage,window:null,console,Math,Date,alert:()=>{},matchMedia:()=>({matches:false}),UPEAuth:auth};
+ ctx.window=ctx;
  const context=vm.createContext(ctx);
  vm.runInContext(scripts[0],context);
- return {run:s=>vm.runInContext(s,context),el,storage};
+ async function login(){
+  el('input-name').value='Ana';el('input-code').value='UPE2A';el('input-password').value='password123';
+  await vm.runInContext('doLogin()',context);
+ }
+ return {run:s=>vm.runInContext(s,context),el,storage,login,auth,saved};
 }
-test('login and 80 percent unlock',()=>{
+test('login uses shared Supabase account and unlocks at 80 percent',async()=>{
  const a=boot();assert.equal(a.el('screen-login').classList.contains('hidden'),false);
- a.el('input-name').value='Ana';a.el('input-code').value='UPE2A';a.run('doLogin()');
- assert.equal(a.run('user.name'),'Ana');assert.equal(a.el('screen-menu').classList.contains('hidden'),false);
+ await a.login();
+ assert.equal(a.run('user.name'),'Ana');
+ assert.equal(a.el('screen-menu').classList.contains('hidden'),false);
  assert.equal(a.run("levelUnlocked('additions',2)"),false);
  a.run("quiz={score:8,questions:Array(10).fill({}),type:'additions',level:'1'};finishQuiz()");
+ await new Promise(resolve=>setImmediate(resolve));
  assert.equal(a.run("levelUnlocked('additions',2)"),true);
  assert.equal(a.run('getSessions().length'),1);
 });
-test('score 7/10 does not unlock',()=>{
- const a=boot();a.el('input-name').value='Ana';a.el('input-code').value='UPE2A';a.run('doLogin()');
+test('score 7/10 does not unlock',async()=>{
+ const a=boot();await a.login();
  a.run("quiz={score:7,questions:Array(10).fill({}),type:'additions',level:'1'};finishQuiz()");
  assert.equal(a.run("levelUnlocked('additions',2)"),false);
+});
+test('saved progress is loaded from Supabase on another device',async()=>{
+ const a=boot({remote:[{exercise_type:'additions',level:'1',score:8,total:10,completed_at:'2026-11-11T13:00:00Z'}]});
+ await a.login();
+ assert.equal(a.run("levelUnlocked('additions',2)"),true);
 });
 test('design and accessibility',()=>{
  assert.match(html,/atelier-header/);assert.match(html,/atelierToggleTheme/);
