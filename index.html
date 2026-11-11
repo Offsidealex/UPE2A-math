@@ -91,7 +91,7 @@
       <input id="input-name" type="text" maxlength="30" placeholder="Ton pseudo Activités mentales" autocomplete="username" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
       <label for="input-code" class="block text-sm font-semibold text-gray-600">Classe</label>
       <select id="input-code" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
-        <option value="UE">UE</option><option value="3PM">3PM</option>
+        <option value="UPE2A">UPE2A</option><option value="3PM">3PM</option>
         <option value="2TNE1">2TNE1</option><option value="2TNE2">2TNE2</option>
         <option value="2TNE3">2TNE3</option><option value="2REMI1">2REMI1</option>
         <option value="2REMI2">2REMI2</option><option value="1CAP">1CAP</option>
@@ -502,17 +502,28 @@ async function connect(action){
   const eleve=UPEAuth.loadEleve();
   user={name:eleve.prenom||name,classId:'SUPABASE',className:classe,eleveId:eleve.id};
   clearUser(); // Ne pas mémoriser un accès non authentifié dans localStorage.
+  clearOtherStudentCache(eleve.id);
   err.classList.add('hidden');
   await syncSessions();
   showMenu();
  }catch(e){showErr(err,e.message||'Connexion impossible.');}
  finally{buttons.forEach(b=>b.disabled=false);}
 }
+function clearOtherStudentCache(eleveId){
+ try{
+  const owner=localStorage.getItem('upe2a_cache_owner');
+  if(owner!==eleveId){
+   localStorage.setItem(LS_SESSIONS,JSON.stringify(getSessions().filter(s=>s.class_id!=='SUPABASE')));
+   localStorage.setItem('upe2a_cache_owner',eleveId);
+  }
+ }catch(e){console.warn('Cache non disponible',e);}
+}
 function doLogin(){return connect('login');}
 function doRegister(){return connect('register');}
 function showErr(el,msg){el.textContent=msg;el.classList.remove('hidden');}
 function logout(){
  UPEAuth.logout();user=null;clearUser();
+ try{localStorage.setItem(LS_SESSIONS,JSON.stringify(getSessions().filter(s=>s.class_id!=='SUPABASE')));localStorage.removeItem('upe2a_cache_owner');}catch(e){}
  document.getElementById('input-password').value='';
  show('login');
 }
@@ -1272,7 +1283,7 @@ document.getElementById('input-password').addEventListener('keydown',e=>{if(e.ke
 (function init(){
  const eleve=UPEAuth.loadEleve();
  clearUser();
- if(eleve){user={name:eleve.prenom,classId:'SUPABASE',className:'Atelier Maths',eleveId:eleve.id};showMenu();syncSessions();}
+ if(eleve){clearOtherStudentCache(eleve.id);user={name:eleve.prenom,classId:'SUPABASE',className:'Atelier Maths',eleveId:eleve.id};showMenu();syncSessions();}
  else show('login');
 })();
 window.addEventListener('online',()=>{if(user)syncSessions();});
