@@ -54,7 +54,9 @@
     .atelier-dark .bg-white {background-color:var(--atelier-surface)!important;color:var(--atelier-text)!important;}
     .atelier-dark .text-gray-800,.atelier-dark .text-gray-700 {color:var(--atelier-text)!important;}
     .atelier-dark .text-gray-600,.atelier-dark .text-gray-500,.atelier-dark .text-gray-400 {color:var(--atelier-muted)!important;}
-    .atelier-dark input {background:#14243a;color:#fff;border-color:#47607d;}
+    .atelier-dark input,.atelier-dark select {background:#14243a!important;color:#fff!important;border-color:#47607d!important;color-scheme:dark;}
+.atelier-dark select option {background:#14243a;color:#fff;}
+#input-code option {color:#14243a;background:#fff;}
     .atelier-dark .bg-blue-50,.atelier-dark .bg-green-50,.atelier-dark .bg-orange-50,.atelier-dark .bg-red-50,.atelier-dark .bg-purple-50,.atelier-dark .bg-yellow-50,.atelier-dark .bg-indigo-50 {background-color:#213751!important;}
     .atelier-dark .card-hover {border-color:#375373!important;}
     /* Fonds pastel supplémentaires et contrastes des cartes en thème sombre */
@@ -74,35 +76,31 @@
   </a>
   <nav class="atelier-actions" aria-label="Navigation">
     <button type="button" id="atelier-theme-toggle" onclick="atelierToggleTheme()" aria-label="Changer le thème">🌙</button>
-    <span style="font-size:.78rem;opacity:.85" title="Lien disponible après publication du portail">Portail bientôt</span>
+    <button type="button" id="header-login-btn" onclick="openLogin()">👤 Connexion</button>
+<button type="button" id="header-logout-btn" onclick="logout()" class="hidden">🚪 Déconnexion</button>
   </nav>
 </header>
 
-<!-- ÉCRAN 1 : connexion au compte Atelier Maths partagé -->
-<div id="screen-login" class="min-h-screen flex items-center justify-center p-4">
-  <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-sm space-y-5">
-    <div class="text-center">
-      <div class="text-5xl mb-3">🌍</div>
-      <h1 class="text-2xl font-bold text-gray-800">Mathématiques UPE2A</h1>
-      <p class="text-gray-500 text-sm mt-1">Ton compte Atelier Maths</p>
-    </div>
-    <div class="space-y-3">
-      <label for="input-name" class="block text-sm font-semibold text-gray-600">Pseudo</label>
-      <input id="input-name" type="text" maxlength="30" placeholder="Ton pseudo Activités mentales" autocomplete="username" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
-      <label for="input-code" class="block text-sm font-semibold text-gray-600">Classe</label>
-      <select id="input-code" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
-        <option value="UPE2A">UPE2A</option><option value="3PM">3PM</option>
-        <option value="2TNE1">2TNE1</option><option value="2TNE2">2TNE2</option>
-        <option value="2TNE3">2TNE3</option><option value="2REMI1">2REMI1</option>
-        <option value="2REMI2">2REMI2</option><option value="1CAP">1CAP</option>
-      </select>
-      <label for="input-password" class="block text-sm font-semibold text-gray-600">Mot de passe</label>
-      <input id="input-password" type="password" minlength="8" autocomplete="current-password" placeholder="Ton mot de passe" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
-      <p id="login-error" role="alert" class="text-red-500 text-sm hidden text-center"></p>
-      <button id="login-submit" onclick="doLogin()" class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold">Se connecter</button>
-      <button id="register-submit" onclick="doRegister()" class="w-full py-2 border border-blue-300 text-blue-700 rounded-xl font-semibold">Créer mon compte</button>
-    </div>
+<!-- Fenêtre de connexion facultative -->
+<div id="screen-login" class="hidden fixed inset-0 z-50 bg-slate-950/70 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="upe-login-title">
+ <div class="bg-white shadow-2xl rounded-3xl p-7 sm:p-9 w-full max-w-sm mx-auto my-8 space-y-5 relative">
+  <button type="button" onclick="closeLogin()" aria-label="Fermer" class="absolute top-3 right-4 text-gray-500 text-3xl">×</button>
+  <div class="text-center"><div class="text-5xl mb-3">🌍</div><h1 id="upe-login-title" class="text-2xl font-bold text-gray-800">Connexion élève</h1><p class="text-gray-500 text-sm">Compte Atelier Maths</p></div>
+  <div class="space-y-3">
+   <label for="input-name" class="block text-sm font-semibold text-gray-600">Pseudo</label>
+   <input id="input-name" type="text" maxlength="30" autocomplete="username" placeholder="Ton pseudo Activités mentales" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
+   <label for="input-code" class="block text-sm font-semibold text-gray-600">Classe</label>
+   <select id="input-code" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-800">
+    <option value="UPE2A">UPE2A</option><option value="3PM">3PM</option><option value="2TNE1">2TNE1</option><option value="2TNE2">2TNE2</option><option value="2TNE3">2TNE3</option><option value="2REMI1">2REMI1</option><option value="2REMI2">2REMI2</option><option value="1CAP">1CAP</option>
+   </select>
+   <label for="input-password" class="block text-sm font-semibold text-gray-600">Mot de passe</label>
+   <input id="input-password" type="password" minlength="8" autocomplete="current-password" placeholder="Ton mot de passe" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
+   <p id="login-error" role="alert" class="text-red-500 text-sm hidden text-center"></p>
+   <button id="login-submit" onclick="doLogin()" class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold">Se connecter</button>
+   <button id="register-submit" onclick="doRegister()" class="w-full py-2 border border-blue-300 text-blue-700 rounded-xl font-semibold">Créer mon compte</button>
+   <button type="button" onclick="closeLogin()" class="w-full text-sm text-gray-500 underline py-1">Continuer sans compte</button>
   </div>
+ </div>
 </div>
 
 <!-- ── ÉCRAN 2 : Menu principal ────────────────────────────────────────── -->
@@ -116,7 +114,7 @@
       <div class="flex gap-2 mt-1">
         <button onclick="toggleTTS()" id="tts-toggle-btn" title="Activer/désactiver la lecture vocale"
           class="text-xs px-3 py-1.5 rounded-full border-2 border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">🔊</button>
-        <button type="button" onclick="logout()" title="Se déconnecter du compte élève" class="text-sm px-3 py-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-700 font-semibold hover:bg-red-100 hover:border-red-300 transition">🚪 Déconnexion</button>
+        
       </div>
     </div>
 
@@ -493,7 +491,7 @@ let mesureScore = 0;
 // NAVIGATION
 // ═══════════════════════════════════════════════════
 function show(id) {
-  ['login','menu','levels','quiz','result','magic','heure','geo','mesures'].forEach(s => {
+  ['menu','levels','quiz','result','magic','heure','geo','mesures'].forEach(s => {
     const el = document.getElementById('screen-'+s);
     el.classList.toggle('hidden', s !== id);
   });
@@ -522,6 +520,7 @@ async function connect(action){
   clearUser(); // Ne pas mémoriser un accès non authentifié dans localStorage.
   clearOtherStudentCache(eleve.id);
   err.classList.add('hidden');
+  closeLogin();
   await syncSessions();
   showMenu();
  }catch(e){showErr(err,e.message||'Connexion impossible.');}
@@ -536,14 +535,26 @@ function clearOtherStudentCache(eleveId){
   }
  }catch(e){console.warn('Cache non disponible',e);}
 }
+function openLogin(){
+ const modal=document.getElementById('screen-login');
+ modal.classList.remove('hidden');
+ document.getElementById('input-name').focus();
+}
+function closeLogin(){document.getElementById('screen-login').classList.add('hidden');}
+function updateConnectionButtons(){
+ const loggedIn=Boolean(user&&user.eleveId);
+ document.getElementById('header-login-btn').classList.toggle('hidden',loggedIn);
+ document.getElementById('header-logout-btn').classList.toggle('hidden',!loggedIn);
+}
 function doLogin(){return connect('login');}
 function doRegister(){return connect('register');}
 function showErr(el,msg){el.textContent=msg;el.classList.remove('hidden');}
 function logout(){
- UPEAuth.logout();user=null;clearUser();
+ UPEAuth.logout();user=loadGuest();clearUser();
  try{localStorage.setItem(LS_SESSIONS,JSON.stringify(getSessions().filter(s=>s.class_id!=='SUPABASE')));localStorage.removeItem('upe2a_cache_owner');}catch(e){}
  document.getElementById('input-password').value='';
- show('login');
+ closeLogin();
+ showMenu();
 }
 async function syncSessions(){
  if(syncing||!user||!UPEAuth.loadEleve())return;
@@ -566,6 +577,7 @@ async function syncSessions(){
 function showMenu() {
   document.getElementById('menu-name').textContent = user.name.split(' ')[0];
   show('menu');
+  updateConnectionButtons();
   buildScoreSummary();
 }
 
@@ -1304,9 +1316,15 @@ document.getElementById('input-password').addEventListener('keydown',e=>{if(e.ke
 (function init(){
  const eleve=UPEAuth.loadEleve();
  clearUser();
- if(eleve){clearOtherStudentCache(eleve.id);user={name:eleve.prenom,classId:'SUPABASE',className:'Atelier Maths',eleveId:eleve.id};showMenu();syncSessions();}
- else show('login');
-})();
+ if(eleve){
+  clearOtherStudentCache(eleve.id);
+  user={name:eleve.prenom,classId:'SUPABASE',className:'Atelier Maths',eleveId:eleve.id};
+  showMenu();syncSessions();
+ }else{
+  user=loadGuest();
+  showMenu();
+ }
+})();;
 window.addEventListener('online',()=>{if(user)syncSessions();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user)syncSessions();});
 </script>
