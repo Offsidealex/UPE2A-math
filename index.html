@@ -78,30 +78,29 @@
   </nav>
 </header>
 
-<!-- ── ÉCRAN 1 : Connexion ─────────────────────────────────────────────── -->
+<!-- ÉCRAN 1 : connexion au compte Atelier Maths partagé -->
 <div id="screen-login" class="min-h-screen flex items-center justify-center p-4">
-  <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-sm space-y-6">
+  <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-sm space-y-5">
     <div class="text-center">
       <div class="text-5xl mb-3">🌍</div>
       <h1 class="text-2xl font-bold text-gray-800">Mathématiques UPE2A</h1>
-      <p class="text-gray-400 text-sm mt-1">Lycée Denis Diderot</p>
+      <p class="text-gray-500 text-sm mt-1">Ton compte Atelier Maths</p>
     </div>
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-semibold text-gray-600 mb-1">Ton prénom</label>
-        <input id="input-name" type="text" placeholder="Ex : Ana" autocomplete="off"
-          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-blue-400 transition">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-600 mb-1">Code de classe</label>
-        <input id="input-code" type="text" placeholder="Ex : UPE2A" maxlength="10" autocomplete="off"
-          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base uppercase tracking-widest focus:outline-none focus:border-blue-400 transition">
-      </div>
-      <p id="login-error" class="text-red-500 text-sm hidden text-center"></p>
-      <button onclick="doLogin()"
-        class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold hover:bg-blue-700 active:bg-blue-800 transition shadow-md">
-        Entrer →
-      </button>
+    <div class="space-y-3">
+      <label for="input-name" class="block text-sm font-semibold text-gray-600">Pseudo</label>
+      <input id="input-name" type="text" maxlength="30" placeholder="Ton pseudo Activités mentales" autocomplete="username" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
+      <label for="input-code" class="block text-sm font-semibold text-gray-600">Classe</label>
+      <select id="input-code" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
+        <option value="UE">UE</option><option value="3PM">3PM</option>
+        <option value="2TNE1">2TNE1</option><option value="2TNE2">2TNE2</option>
+        <option value="2TNE3">2TNE3</option><option value="2REMI1">2REMI1</option>
+        <option value="2REMI2">2REMI2</option><option value="1CAP">1CAP</option>
+      </select>
+      <label for="input-password" class="block text-sm font-semibold text-gray-600">Mot de passe</label>
+      <input id="input-password" type="password" minlength="8" autocomplete="current-password" placeholder="Ton mot de passe" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
+      <p id="login-error" role="alert" class="text-red-500 text-sm hidden text-center"></p>
+      <button id="login-submit" onclick="doLogin()" class="w-full py-3 bg-blue-600 text-white rounded-xl text-lg font-bold">Se connecter</button>
+      <button id="register-submit" onclick="doRegister()" class="w-full py-2 border border-blue-300 text-blue-700 rounded-xl font-semibold">Créer mon compte</button>
     </div>
   </div>
 </div>
@@ -332,6 +331,7 @@
   </div>
 </div>
 
+<script src="upe2a-auth.js"></script>
 <script>
 // ═══════════════════════════════════════════════════
 // TTS — Text To Speech
@@ -390,7 +390,7 @@ function loadGuest(){
   } catch(e){ console.warn('Identité invité non récupérée :',e); }
   return storeGuest(newGuest());
 }
-function progressionKey(u){ return u.classId==='INVITE' ? `guest:${u.guestId}` : `student:${u.classId}:${u.name}`; }
+function progressionKey(u){return u.eleveId ? 'auth:'+u.eleveId : 'guest:'+(u.guestId||'none');}
 function getUnlocks(){ try { return JSON.parse(localStorage.getItem(LS_UNLOCKS)) || {}; } catch { return {}; } }
 function earnUnlock(type,level){
   const sequence=LEVEL_SEQUENCES[type];
@@ -409,14 +409,19 @@ function saveUser(u) { localStorage.setItem(LS_USER, JSON.stringify(u)); }
 function loadUser() { try { return JSON.parse(localStorage.getItem(LS_USER)); } catch { return null; } }
 function clearUser() { localStorage.removeItem(LS_USER); }
 function getSessions() { try { return JSON.parse(localStorage.getItem(LS_SESSIONS)) || []; } catch { return []; } }
-function saveSession(session) {
-  const sessions = getSessions();
-  sessions.unshift({ ...session, completed_at: new Date().toISOString() });
-  try { localStorage.setItem(LS_SESSIONS, JSON.stringify(sessions.slice(0, 200))); }
-  catch(e){ console.warn('Historique non enregistré :',e); }
+async function saveSession(session) {
+  // Sauvegarde locale de secours. Une erreur réseau ne doit pas faire perdre la séance.
+  const sessions=getSessions();
+  const saved={...session,completed_at:new Date().toISOString()};
+  sessions.unshift(saved);
+  try{localStorage.setItem(LS_SESSIONS,JSON.stringify(sessions.slice(0,1200)));}catch(e){}
+  if(user?.eleveId){
+    try{await UPEAuth.saveResult(session);await syncSessions();}
+    catch(e){console.warn('Séance conservée localement, non synchronisée :',e);alert('Connexion interrompue : cette séance est conservée sur cet appareil, mais pas encore dans Supabase.');}
+  }
 }
-function getStudentSessions(name, classId) {
-  return getSessions().filter(s => s.student_name === name && s.class_id === classId && (classId !== 'INVITE' || (user && s.guest_id === user.guestId)));
+function getStudentSessions(name,classId){
+ return getSessions().filter(s=>s.class_id===classId&&s.student_name===name);
 }
 
 // ═══════════════════════════════════════════════════
@@ -483,20 +488,46 @@ function show(id) {
 // ═══════════════════════════════════════════════════
 // CONNEXION
 // ═══════════════════════════════════════════════════
-function doLogin() {
-  const name = document.getElementById('input-name').value.trim();
-  const code = document.getElementById('input-code').value.trim().toUpperCase();
-  const err  = document.getElementById('login-error');
-  if (name.length < 2) { showErr(err,'Écris ton prénom.'); return; }
-  if (code !== 'UPE2A') { showErr(err,'Code de classe incorrect.'); return; }
-  user = { name, classId: 'UPE2A', className: 'UPE2A' };
+let syncing=false;
+async function connect(action){
+ const name=document.getElementById('input-name').value.trim();
+ const classe=document.getElementById('input-code').value;
+ const password=document.getElementById('input-password').value;
+ const err=document.getElementById('login-error');
+ const buttons=[document.getElementById('login-submit'),document.getElementById('register-submit')];
+ if(name.length<2||password.length<8){showErr(err,'Saisis ton pseudo et ton mot de passe (8 caractères minimum).');return;}
+ buttons.forEach(b=>b.disabled=true);
+ try{
+  await UPEAuth.studentAuth(action,name,classe,password);
+  const eleve=UPEAuth.loadEleve();
+  user={name:eleve.prenom||name,classId:'SUPABASE',className:classe,eleveId:eleve.id};
+  clearUser(); // Ne pas mémoriser un accès non authentifié dans localStorage.
   err.classList.add('hidden');
-  saveUser(user);
+  await syncSessions();
   showMenu();
+ }catch(e){showErr(err,e.message||'Connexion impossible.');}
+ finally{buttons.forEach(b=>b.disabled=false);}
 }
-function showErr(el,msg) { el.textContent=msg; el.classList.remove('hidden'); }
-function logout() { user=null; clearUser(); document.getElementById('input-name').value=''; show('login'); }
-
+function doLogin(){return connect('login');}
+function doRegister(){return connect('register');}
+function showErr(el,msg){el.textContent=msg;el.classList.remove('hidden');}
+function logout(){
+ UPEAuth.logout();user=null;clearUser();
+ document.getElementById('input-password').value='';
+ show('login');
+}
+async function syncSessions(){
+ if(syncing||!user||!UPEAuth.loadEleve())return;
+ syncing=true;
+ try{
+  const rows=await UPEAuth.getSessions();
+  if(!user||user.eleveId!==UPEAuth.loadEleve()?.id)return;
+  const local=getSessions().filter(s=>s.class_id!=='SUPABASE');
+  localStorage.setItem(LS_SESSIONS,JSON.stringify([...rows,...local].slice(0,1200)));
+  if(document.getElementById('screen-menu')&&!document.getElementById('screen-menu').classList.contains('hidden'))buildScoreSummary();
+ }catch(err){console.warn('Synchronisation UPE2A indisponible',err);}
+ finally{syncing=false;}
+}
 // ═══════════════════════════════════════════════════
 // MENU
 // ═══════════════════════════════════════════════════
@@ -668,7 +699,7 @@ function checkCarreMagique() {
   }
   const fb=document.getElementById('magic-feedback');
   fb.classList.remove('hidden','text-green-600','text-red-600');
-  if(allCorrect){ fb.textContent="🎉 Bravo, c'est correct !"; fb.classList.add('text-green-600'); document.getElementById('magic-check-btn').disabled=true; document.getElementById('magic-check-btn').classList.add('opacity-50'); earnUnlock('magic',currentMagicLevel); saveSession({student_name:user.name,class_id:user.classId,guest_id:user.guestId || null,exercise_type:'magic',level:currentMagicLevel.toString(),score:1,total:1}); if(user.classId !== 'INVITE' && window.AM && window.AM.currentEleve()) window.AM.sendSession({exercice:`UPE2A | magic | Niveau ${currentMagicLevel}`,score:1,nb_questions:1,duree_totale_ms:null,reponses:[]}); }
+  if(allCorrect){ fb.textContent="🎉 Bravo, c'est correct !"; fb.classList.add('text-green-600'); document.getElementById('magic-check-btn').disabled=true; document.getElementById('magic-check-btn').classList.add('opacity-50'); earnUnlock('magic',currentMagicLevel); saveSession({student_name:user.name,class_id:user.classId,guest_id:user.guestId || null,exercise_type:'magic',level:currentMagicLevel.toString(),score:1,total:1}); // Les résultats sont sauvegardés par UPEAuth.saveResult (pas en double). }
   else { fb.textContent="❌ Pas tout à fait, réessaie !"; fb.classList.add('text-red-600'); }
 }
 
@@ -1232,14 +1263,20 @@ function finishQuiz(){
 // ═══════════════════════════════════════════════════
 // EVENTS LOGIN
 // ═══════════════════════════════════════════════════
-document.getElementById('input-code').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase(); });
-document.getElementById('input-name').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('input-code').focus(); });
-document.getElementById('input-code').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('input-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('input-password').focus();});
+document.getElementById('input-password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-(function init(){ const saved=loadUser(); if(saved){user=saved;showMenu();} else {show('login');} })();
+(function init(){
+ const eleve=UPEAuth.loadEleve();
+ clearUser();
+ if(eleve){user={name:eleve.prenom,classId:'SUPABASE',className:'Atelier Maths',eleveId:eleve.id};showMenu();syncSessions();}
+ else show('login');
+})();
+window.addEventListener('online',()=>{if(user)syncSessions();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user)syncSessions();});
 </script>
 <script>
 (function(){try{const saved=localStorage.getItem('atelier-maths-theme');const theme=saved|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.classList.toggle('atelier-dark',theme==='dark');}catch(e){}})();
