@@ -492,7 +492,7 @@ let mesureScore = 0;
 // NAVIGATION
 // ═══════════════════════════════════════════════════
 function show(id) {
-  ['login','menu','levels','quiz','result','magic','heure','geo','mesures'].forEach(s => {
+  ['menu','levels','quiz','result','magic','heure','geo','mesures'].forEach(s => {
     const el = document.getElementById('screen-'+s);
     el.classList.toggle('hidden', s !== id);
   });
@@ -521,6 +521,7 @@ async function connect(action){
   clearUser(); // Ne pas mémoriser un accès non authentifié dans localStorage.
   clearOtherStudentCache(eleve.id);
   err.classList.add('hidden');
+  closeLogin();
   await syncSessions();
   showMenu();
  }catch(e){showErr(err,e.message||'Connexion impossible.');}
@@ -535,14 +536,26 @@ function clearOtherStudentCache(eleveId){
   }
  }catch(e){console.warn('Cache non disponible',e);}
 }
+function openLogin(){
+ const modal=document.getElementById('screen-login');
+ modal.classList.remove('hidden');
+ document.getElementById('input-name').focus();
+}
+function closeLogin(){document.getElementById('screen-login').classList.add('hidden');}
+function updateConnectionButtons(){
+ const loggedIn=Boolean(user&&user.eleveId);
+ document.getElementById('header-login-btn').classList.toggle('hidden',loggedIn);
+ document.getElementById('header-logout-btn').classList.toggle('hidden',!loggedIn);
+}
 function doLogin(){return connect('login');}
 function doRegister(){return connect('register');}
 function showErr(el,msg){el.textContent=msg;el.classList.remove('hidden');}
 function logout(){
- UPEAuth.logout();user=null;clearUser();
+ UPEAuth.logout();user=loadGuest();clearUser();
  try{localStorage.setItem(LS_SESSIONS,JSON.stringify(getSessions().filter(s=>s.class_id!=='SUPABASE')));localStorage.removeItem('upe2a_cache_owner');}catch(e){}
  document.getElementById('input-password').value='';
- show('login');
+ closeLogin();
+ showMenu();
 }
 async function syncSessions(){
  if(syncing||!user||!UPEAuth.loadEleve())return;
@@ -565,6 +578,7 @@ async function syncSessions(){
 function showMenu() {
   document.getElementById('menu-name').textContent = user.name.split(' ')[0];
   show('menu');
+  updateConnectionButtons();
   buildScoreSummary();
 }
 
@@ -1303,9 +1317,15 @@ document.getElementById('input-password').addEventListener('keydown',e=>{if(e.ke
 (function init(){
  const eleve=UPEAuth.loadEleve();
  clearUser();
- if(eleve){clearOtherStudentCache(eleve.id);user={name:eleve.prenom,classId:'SUPABASE',className:'Atelier Maths',eleveId:eleve.id};showMenu();syncSessions();}
- else show('login');
-})();
+ if(eleve){
+  clearOtherStudentCache(eleve.id);
+  user={name:eleve.prenom,classId:'SUPABASE',className:'Atelier Maths',eleveId:eleve.id};
+  showMenu();syncSessions();
+ }else{
+  user=loadGuest();
+  showMenu();
+ }
+})();;
 window.addEventListener('online',()=>{if(user)syncSessions();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user)syncSessions();});
 </script>
