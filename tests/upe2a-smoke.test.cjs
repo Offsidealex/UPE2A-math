@@ -12,11 +12,11 @@ function boot({remote=[], failSave=false}={}) {
  function el(id){
   if(!elements.has(id)){
    const tag=html.match(new RegExp('<[^>]+id="'+id+'"[^>]*>'))?.[0]||'';
-   const set=new Set((tag.match(/class="([^"]*)"/)?.[1]||'').split(/\\s+/).filter(Boolean));
+   const set=new Set((tag.match(/class="([^"]*)"/)?.[1]||'').split(/\s+/).filter(Boolean));
    elements.set(id,{id,value:'',textContent:'',disabled:false,style:{},
     classList:{add:(...v)=>v.forEach(x=>set.add(x)),remove:(...v)=>v.forEach(x=>set.delete(x)),
       contains:x=>set.has(x),toggle:(x,v)=>{if(v===undefined)v=!set.has(x);v?set.add(x):set.delete(x);return v;}},
-    addEventListener(){},focus(){},set innerHTML(x){this._html=x;this.buttons=[...x.matchAll(/<button\\b/g)].map(()=>({disabled:false,classList:{add(){},remove(){}}}));},
+    addEventListener(){},focus(){},set innerHTML(x){this._html=x;this.buttons=[...x.matchAll(/<button\b/g)].map(()=>({disabled:false,classList:{add(){},remove(){}}}));},
     get innerHTML(){return this._html||'';}});
   }
   return elements.get(id);
