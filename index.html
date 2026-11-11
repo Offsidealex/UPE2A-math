@@ -421,7 +421,7 @@ async function flushPending(){
   localStorage.setItem(key,JSON.stringify(queue));
  }
 }
-async function saveSession(session) {
+async async function saveSession(session) {
  const saved={...session,completed_at:new Date().toISOString()};
  const sessions=getSessions();
  sessions.unshift(saved);
@@ -1281,7 +1281,7 @@ function finishQuiz(){
   const pct=score/total;
   if(total>0 && pct>=0.8)earnUnlock(type,level);
   saveSession({student_name:user.name,class_id:user.classId,guest_id:user.guestId || null,exercise_type:type,level,score,total});
-  if(user.classId !== 'INVITE' && window.AM && window.AM.currentEleve()) window.AM.sendSession({exercice:`UPE2A | ${type} | Niveau ${level}`,score,nb_questions:total,duree_totale_ms:null,reponses:[]});
+
   document.getElementById('result-score').textContent=score;
   document.getElementById('result-total').textContent=total;
   if(pct>=0.9){ document.getElementById('result-emoji').textContent='🏆'; document.getElementById('result-message').textContent='Excellent ! Tu maîtrises très bien !'; document.getElementById('result-stars').textContent='⭐⭐⭐'; }
