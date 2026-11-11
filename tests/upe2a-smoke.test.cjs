@@ -36,7 +36,7 @@ function boot({remote=[], failSave=false}={}) {
  };
  const document={getElementById:el,documentElement:{classList:{contains(){return false},toggle(){}}},querySelectorAll:()=>el('levels-list').buttons||[],addEventListener(){}};
  const ctx={document,localStorage,window:null,console,Math,Date,alert:()=>{},matchMedia:()=>({matches:false}),UPEAuth:auth};
- ctx.window=ctx;
+ ctx.window=ctx;ctx.addEventListener=()=>{};
  const context=vm.createContext(ctx);
  vm.runInContext(scripts[0],context);
  async function login(){
